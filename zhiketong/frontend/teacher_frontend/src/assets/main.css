@@ -1,0 +1,24 @@
+@import './base.css';
+
+#app {
+  min-height: 100vh;
+}
+
+* {
+  scrollbar-width: thin;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
