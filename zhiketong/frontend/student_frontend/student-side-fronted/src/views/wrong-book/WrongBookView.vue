@@ -99,24 +99,7 @@
     </template>
 
     <template #footer>
-      <nav class="wrong-book-bottom-nav" aria-label="底部导航">
-        <button type="button" class="bottom-tab" @click="navigateTo('/home')">
-          <span class="bottom-tab__icon bottom-tab__icon--home"></span>
-          <span class="bottom-tab__label">首页</span>
-        </button>
-        <button type="button" class="bottom-tab" @click="navigateTo('/weakness-map')">
-          <span class="bottom-tab__icon bottom-tab__icon--study"></span>
-          <span class="bottom-tab__label">学习</span>
-        </button>
-        <button type="button" class="bottom-tab bottom-tab--active">
-          <span class="bottom-tab__icon bottom-tab__icon--wrong"></span>
-          <span class="bottom-tab__label">错题本</span>
-        </button>
-        <button type="button" class="bottom-tab" @click="navigateTo('/profile')">
-          <span class="bottom-tab__icon bottom-tab__icon--profile"></span>
-          <span class="bottom-tab__label">我的</span>
-        </button>
-      </nav>
+      <BottomNav :activeTab="'wrong-book'" />
     </template>
   </AppMobileFrame>
 </template>
@@ -125,6 +108,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppMobileFrame from '../../components/layout/AppMobileFrame.vue'
+import BottomNav from '../../components/layout/BottomNav.vue'
 import { useStudentStore } from '../../stores/studentStore'
 
 const router = useRouter()
@@ -207,60 +191,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.wrong-book-page {
-  width: 100%;
-}
-
-.wrong-book-frame {
-  max-width: 375px;
-  margin: 0 auto;
-  min-height: calc(100svh - 48px);
-  background: #f5f7fa;
-  border-radius: 40px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  border: 10px solid #fff;
-  position: relative;
-}
-
-.wrong-book-status {
-  height: 44px;
-  padding: 0 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #333;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.wrong-book-status__indicators {
-  display: inline-flex;
-  gap: 7px;
-  align-items: center;
-}
-
-.status-icon {
-  display: inline-block;
-  background: #333;
-  border-radius: 999px;
-}
-
-.status-icon--signal {
-  width: 14px;
-  height: 14px;
-}
-
-.status-icon--wifi {
-  width: 16px;
-  height: 12px;
-}
-
-.status-icon--battery {
-  width: 18px;
-  height: 10px;
-}
-
 .wrong-book-topbar {
   height: 44.67px;
   padding: 0 20px;
@@ -317,7 +247,6 @@ onBeforeUnmount(() => {
 }
 
 .wrong-book-scroll {
-  height: calc(100svh - 109px - 65px);
   overflow: auto;
   padding: 0 0 16px;
 }
@@ -582,55 +511,7 @@ onBeforeUnmount(() => {
   height: 20px;
 }
 
-.wrong-book-bottom-nav {
-  position: sticky;
-  bottom: 0;
-  height: 65px;
-  margin: 0 10px 10px;
-  padding: 0 8px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  align-items: center;
-  background: rgba(255, 255, 255, 0.95);
-  border-top: 1px solid #f0f0f0;
-  border-bottom-left-radius: 30px;
-  border-bottom-right-radius: 30px;
-  backdrop-filter: blur(5px);
-}
-
-.bottom-tab {
-  border: 0;
-  background: transparent;
-  display: grid;
-  justify-items: center;
-  gap: 6px;
-  color: #999;
-  cursor: pointer;
-}
-
-.bottom-tab--active {
-  color: #6c5ce7;
-}
-
-.bottom-tab__icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  background: currentColor;
-}
-
-.bottom-tab__label {
-  font-size: 0.625rem;
-  font-weight: 500;
-}
-
 @media (max-width: 420px) {
-  .wrong-book-frame {
-    max-width: 100%;
-    border-radius: 0;
-    border-width: 0;
-  }
-
   .filter-bar,
   .mistake-card {
     width: calc(100% - 24px);

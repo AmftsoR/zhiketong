@@ -169,26 +169,6 @@
       </div>
     </section>
 
-    <template #footer>
-      <nav class="weakness-bottom-nav" aria-label="底部导航">
-        <button type="button" class="bottom-tab" @click="router.push('/home')">
-          <span class="bottom-tab__icon bottom-tab__icon--home"></span>
-          <span class="bottom-tab__label">首页</span>
-        </button>
-        <button type="button" class="bottom-tab bottom-tab--active">
-          <span class="bottom-tab__icon bottom-tab__icon--study"></span>
-          <span class="bottom-tab__label">学习</span>
-        </button>
-        <button type="button" class="bottom-tab" @click="router.push('/wrong-book')">
-          <span class="bottom-tab__icon bottom-tab__icon--wrong"></span>
-          <span class="bottom-tab__label">错题本</span>
-        </button>
-        <button type="button" class="bottom-tab" @click="router.push('/profile')">
-          <span class="bottom-tab__icon bottom-tab__icon--profile"></span>
-          <span class="bottom-tab__label">我的</span>
-        </button>
-      </nav>
-    </template>
   </AppMobileFrame>
 </template>
 
@@ -841,32 +821,6 @@ onBeforeUnmount(() => {
   border-radius: inherit;
 }
 
-.weakness-bottom-nav {
-  margin: 2px 12px 0;
-  padding: 12px 10px 8px;
-  border-radius: 22px 22px 0 0;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 -10px 24px rgba(25, 32, 72, 0.04);
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.bottom-tab {
-  border: 0;
-  background: transparent;
-  display: grid;
-  justify-items: center;
-  gap: 4px;
-  color: #a0a3bb;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.bottom-tab--active {
-  color: #6c5ce7;
-}
-
 @media (max-width: 420px) {
   .subject-strip,
   .mode-strip,
@@ -880,11 +834,6 @@ onBeforeUnmount(() => {
 
   .radar-insight {
     grid-template-columns: 1fr;
-  }
-
-  .weakness-bottom-nav {
-    margin-left: 8px;
-    margin-right: 8px;
   }
 }
 </style>

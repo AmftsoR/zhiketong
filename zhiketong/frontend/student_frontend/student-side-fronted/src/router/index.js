@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/home/HomeView.vue'
+import StudyView from '../views/study/StudyView.vue'
 import WeaknessMapView from '../views/weakness-map/WeaknessMapView.vue'
 import TargetPracticeView from '../views/target-practice/TargetPracticeView.vue'
 import WrongBookView from '../views/wrong-book/WrongBookView.vue'
@@ -12,10 +13,16 @@ const routes = [
   { path: '/', redirect: '/home' },
   { path: '/home', name: 'home', component: HomeView, meta: { title: '首页界面' } },
   {
+    path: '/study',
+    name: 'study',
+    component: StudyView,
+    meta: { title: '学习界面' },
+  },
+  {
     path: '/weakness-map',
     name: 'weakness-map',
     component: WeaknessMapView,
-    meta: { title: '学习界面-薄弱点图谱' },
+    meta: { title: '薄弱点图谱' },
   },
   {
     path: '/target-practice',

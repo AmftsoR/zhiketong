@@ -182,61 +182,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.practice-page {
-  width: 100%;
-}
-
-.practice-frame {
-  max-width: 375px;
-  margin: 0 auto;
-  min-height: calc(100svh - 48px);
-  background: #f5f7fa;
-  border-radius: 40px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  border: 10px solid #fff;
-  display: flex;
-  flex-direction: column;
-}
-
-.practice-status {
-  height: 44px;
-  padding: 0 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #333;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.practice-status__indicators {
-  display: inline-flex;
-  gap: 7px;
-  align-items: center;
-}
-
-.status-icon {
-  display: inline-block;
-  background: #333;
-  border-radius: 999px;
-}
-
-.status-icon--signal {
-  width: 14px;
-  height: 14px;
-}
-
-.status-icon--wifi {
-  width: 16px;
-  height: 12px;
-}
-
-.status-icon--battery {
-  width: 18px;
-  height: 10px;
-}
-
 .practice-topbar {
   height: 44.67px;
   padding: 0 20px;
@@ -277,7 +222,6 @@ onBeforeUnmount(() => {
 }
 
 .practice-scroll {
-  height: calc(100svh - 109px - 65px);
   overflow: auto;
   padding: 0 0 16px;
 }
@@ -551,12 +495,6 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 420px) {
-  .practice-frame {
-    max-width: 100%;
-    border-radius: 0;
-    border-width: 0;
-  }
-
   .progress-card,
   .mode-tabs,
   .question-card,

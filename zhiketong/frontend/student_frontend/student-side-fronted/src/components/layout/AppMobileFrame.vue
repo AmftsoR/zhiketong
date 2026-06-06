@@ -53,7 +53,8 @@ defineProps({
 .mobile-screen__frame {
   max-width: 375px;
   margin: 0 auto;
-  min-height: calc(100svh - 48px);
+  height: 812px;
+  max-height: calc(100dvh - 48px);
   background: #f5f7fa;
   border-radius: 40px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
@@ -124,7 +125,8 @@ defineProps({
 }
 
 .mobile-screen__scroll {
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-height: 0;
   overflow: auto;
   padding: 0 0 12px;
 }
@@ -137,6 +139,8 @@ defineProps({
 @media (max-width: 420px) {
   .mobile-screen__frame {
     max-width: 100%;
+    height: auto;
+    min-height: 100dvh;
     border-radius: 0;
     border-width: 0;
   }

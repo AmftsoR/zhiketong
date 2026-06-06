@@ -167,62 +167,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.assistant-page {
-  width: 100%;
-}
-
-.assistant-frame {
-  max-width: 375px;
-  margin: 0 auto;
-  min-height: calc(100svh - 48px);
-  background: #f5f7fa;
-  border-radius: 40px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  border: 10px solid #fff;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-
-.assistant-status {
-  height: 44px;
-  padding: 0 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #333;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.assistant-status__indicators {
-  display: inline-flex;
-  gap: 7px;
-  align-items: center;
-}
-
-.status-icon {
-  display: inline-block;
-  background: #333;
-  border-radius: 999px;
-}
-
-.status-icon--signal {
-  width: 14px;
-  height: 14px;
-}
-
-.status-icon--wifi {
-  width: 16px;
-  height: 12px;
-}
-
-.status-icon--battery {
-  width: 18px;
-  height: 10px;
-}
-
 .assistant-top-warning {
   margin: 0 10px;
   height: 32px;
@@ -475,12 +419,6 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 420px) {
-  .assistant-frame {
-    max-width: 100%;
-    border-radius: 0;
-    border-width: 0;
-  }
-
   .assistant-top-warning {
     margin-left: 0;
     margin-right: 0;

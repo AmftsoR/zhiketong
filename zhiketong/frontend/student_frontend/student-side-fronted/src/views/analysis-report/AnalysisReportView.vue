@@ -166,60 +166,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.analysis-page {
-  width: 100%;
-}
-
-.analysis-frame {
-  max-width: 375px;
-  margin: 0 auto;
-  min-height: calc(100svh - 48px);
-  background: #f5f7fa;
-  border-radius: 40px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  border: 10px solid #fff;
-  position: relative;
-}
-
-.analysis-status {
-  height: 44px;
-  padding: 0 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #333;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.analysis-status__indicators {
-  display: inline-flex;
-  gap: 7px;
-  align-items: center;
-}
-
-.status-icon {
-  display: inline-block;
-  background: #333;
-  border-radius: 999px;
-}
-
-.status-icon--signal {
-  width: 14px;
-  height: 14px;
-}
-
-.status-icon--wifi {
-  width: 16px;
-  height: 12px;
-}
-
-.status-icon--battery {
-  width: 18px;
-  height: 10px;
-}
-
 .analysis-topbar {
   height: 44.67px;
   padding: 0 20px;
@@ -275,7 +221,6 @@ onBeforeUnmount(() => {
 }
 
 .analysis-scroll {
-  height: calc(100svh - 109px);
   overflow: auto;
   padding: 0 0 16px;
 }
@@ -527,12 +472,6 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 420px) {
-  .analysis-frame {
-    max-width: 100%;
-    border-radius: 0;
-    border-width: 0;
-  }
-
   .hero-card,
   .radar-card,
   .chapter-card,
