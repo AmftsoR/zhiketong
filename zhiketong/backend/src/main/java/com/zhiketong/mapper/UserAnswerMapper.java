@@ -1,0 +1,9 @@
+package com.zhiketong.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.zhiketong.entity.UserAnswer;
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface UserAnswerMapper extends BaseMapper<UserAnswer> {
+}
