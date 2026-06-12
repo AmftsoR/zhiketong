@@ -5,9 +5,28 @@
         <span class="mobile-screen__time">{{ time }}</span>
 
         <div class="mobile-screen__indicators" aria-hidden="true">
-          <span class="status-icon status-icon--signal"></span>
-          <span class="status-icon status-icon--wifi"></span>
-          <span class="status-icon status-icon--battery"></span>
+          <!-- 信号：4条阶梯竖条 -->
+          <svg class="status-icon" viewBox="0 0 16 12" width="16" height="12">
+            <rect x="0"  y="8"  width="3" height="4"  rx="0.75" fill="#333"/>
+            <rect x="4"  y="5"  width="3" height="7"  rx="0.75" fill="#333"/>
+            <rect x="8"  y="3"  width="3" height="9"  rx="0.75" fill="#333"/>
+            <rect x="12" y="0"  width="3" height="12" rx="0.75" fill="#333"/>
+          </svg>
+
+          <!-- WiFi：底部圆点 + 三层对称弧形（以圆点为中心的上半圆弧） -->
+          <svg class="status-icon" viewBox="0 0 18 16" width="18" height="16">
+            <circle cx="9" cy="11.5" r="2" fill="#333"/>
+            <path d="M 7 11.5 A 2 3 0 0 1 11 11.5"  stroke="#333" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+            <path d="M 5 11.5 A 4 6 0 0 1 13 11.5"  stroke="#333" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+            <path d="M 3 11.5 A 6 9 0 0 1 15 11.5"  stroke="#333" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          </svg>
+
+          <!-- 电池：空心外框 + 正极触点 + 内部填充 -->
+          <svg class="status-icon" viewBox="0 0 25 12" width="25" height="12">
+            <rect x="0" y="0.5" width="21" height="11" rx="2.5" fill="none" stroke="#333" stroke-width="1.2"/>
+            <rect x="2" y="2.5" width="17" height="7" rx="1" fill="#333"/>
+            <rect x="21.5" y="3.5" width="2.5" height="5" rx="1.25" fill="#333"/>
+          </svg>
         </div>
       </header>
 
@@ -94,34 +113,18 @@ defineProps({
 
 .mobile-screen__indicators {
   display: inline-flex;
-  gap: 7px;
+  gap: 8px;
   align-items: center;
+}
+
+.status-icon {
+  display: block;
+  flex-shrink: 0;
 }
 
 .mobile-screen__time {
   position: relative;
   z-index: 1;
-}
-
-.status-icon {
-  display: inline-block;
-  background: #333;
-  border-radius: 999px;
-}
-
-.status-icon--signal {
-  width: 14px;
-  height: 14px;
-}
-
-.status-icon--wifi {
-  width: 16px;
-  height: 12px;
-}
-
-.status-icon--battery {
-  width: 18px;
-  height: 10px;
 }
 
 .mobile-screen__scroll {

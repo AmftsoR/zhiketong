@@ -7,6 +7,7 @@ import WrongBookView from '../views/wrong-book/WrongBookView.vue'
 import AnalysisReportView from '../views/analysis-report/AnalysisReportView.vue'
 import AiAssistantView from '../views/ai-assistant/AiAssistantView.vue'
 import ProfileView from '../views/profile/ProfileView.vue'
+import FavoriteView from '../views/favorite/FavoriteView.vue'
 import NotFoundView from '../views/not-found/NotFoundView.vue'
 
 const routes = [
@@ -48,6 +49,7 @@ const routes = [
     component: AiAssistantView,
     meta: { title: 'AI启发式答题助手' },
   },
+  { path: '/favorites', name: 'favorites', component: FavoriteView, meta: { title: '我的收藏' } },
   { path: '/profile', name: 'profile', component: ProfileView, meta: { title: '我的界面' } },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView, meta: { title: '页面不存在' } },
 ]

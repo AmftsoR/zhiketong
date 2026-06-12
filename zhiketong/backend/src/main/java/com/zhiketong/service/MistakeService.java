@@ -1,6 +1,6 @@
 package com.zhiketong.service;
 
-import com.zhiketong.entity.MistakeBook;
+import com.zhiketong.vo.MistakeVO;
 import java.util.List;
 
 /**
@@ -16,11 +16,11 @@ public interface MistakeService {
     void addMistake(Long userId, Long questionId, Long userAnswerId);
 
     /**
-     * 获取某个用户的所有错题
+     * 获取某个用户的所有错题（含完整关联数据）
      * @param userId 用户ID
-     * @return 错题列表
+     * @return 错题视图列表
      */
-    List<MistakeBook> getMistakesByUser(Long userId);
+    List<MistakeVO> getMistakesByUser(Long userId);
 
     /**
      * 删除某道错题

@@ -160,9 +160,9 @@ function openAiAssistant() {
 }
 
 function continuePractice() {
+  // 每次点击递增进度并直接跳转到靶向练习界面
   if (practiceTask.value.completed < practiceTask.value.total) {
     studentStore.continuePractice()
-    return
   }
   router.push('/target-practice')
 }

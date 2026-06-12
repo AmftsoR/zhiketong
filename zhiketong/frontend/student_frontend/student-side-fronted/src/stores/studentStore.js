@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { fetchMistakes, createMistake as createMistakeApi, deleteMistake, submitAnswer } from '../api/mistake'
 
 const practiceQuestionBanks = {
   basic: [
@@ -236,55 +237,29 @@ export const useStudentStore = defineStore('student', {
         { key: 'single', label: '单选题' },
         { key: 'fill', label: '填空题' },
       ],
-      mistakes: [
-        {
-          id: 'mistake-1',
-          subject: 'math',
-          type: 'single',
-          level: 'weak',
-          levelLabel: '未掌握',
-          date: '05-20 课堂互动收录',
-          stem: '已知集合 A={x|x²-2x-3<0}，B={x|x>a}，若 A⊆B，则实数 a 的取值范围是？',
-          root: '一元二次不等式解法、集合的包含关系',
-          wrongCount: 2,
-          myAnswer: 'B',
-          correctAnswer: 'D',
-          analysis:
-            '你在判断集合包含关系时，没有先求出 A 的解集。A = (-1, 3)，若 A⊆B，则必须满足 x>a 对 A 中所有元素都成立，所以 a 必须小于 -1，或换成对应题意中的正确形式继续判断。此类题的关键是“先解不等式，再做区间包含比较”。',
-        },
-        {
-          id: 'mistake-2',
-          subject: 'math',
-          type: 'single',
-          level: 'medium',
-          levelLabel: '基本掌握',
-          date: '05-18 作业自动批阅',
-          stem: '下列函数中，既是偶函数又在(0, +∞)上单调递增的是...',
-          root: '函数的奇偶性与单调性',
-          wrongCount: 1,
-          myAnswer: 'C',
-          correctAnswer: 'B',
-          analysis:
-            '偶函数满足 f(-x)=f(x)，而在正半轴单调递增需要结合函数图像或表达式逐项排除。你在比较时忽略了定义域对单调性的限制，建议先看奇偶性，再看区间单调性。',
-        },
-        {
-          id: 'mistake-3',
-          subject: 'physics',
-          type: 'single',
-          level: 'weak',
-          levelLabel: '未掌握',
-          date: '05-22 课堂练习收录',
-          stem: '在牛顿第二定律中，若合力恒定，则物体的加速度与什么量成正比？',
-          root: '牛顿第二定律、合力分解',
-          wrongCount: 3,
-          myAnswer: 'A',
-          correctAnswer: 'D',
-          analysis:
-            '牛顿第二定律 F=ma，在质量不变时，加速度与合力成正比。若题目中出现分项受力，需先合成再判断，不要把某一个分力直接代入。',
-        },
-      ],
-      openedAnalysisId: 'mistake-1',
+      mistakes: [],
+      openedAnalysisId: '',
     },
+    favorites: [
+      {
+        id: 'fav-1',
+        subject: 'math',
+        type: 'single',
+        stem: '已知集合 A = {x | x² - 3x + 2 = 0}，则集合 A 的真子集个数是 ( )',
+        correctAnswer: 'C',
+        analysis: '集合 A = {1, 2}，共 2 个元素，真子集个数为 2² - 1 = 3',
+        date: '06-09 14:30',
+      },
+      {
+        id: 'fav-2',
+        subject: 'physics',
+        type: 'single',
+        stem: '一物体做匀加速直线运动，初速度为 2m/s，加速度为 1m/s²，则 3s 末的速度为 ( )',
+        correctAnswer: 'D',
+        analysis: 'v = v₀ + at = 2 + 1 × 3 = 5 m/s',
+        date: '06-08 10:15',
+      },
+    ],
     analysis: {
       selectedMonthKey: 'current',
       monthOptions: [
@@ -353,6 +328,16 @@ export const useStudentStore = defineStore('student', {
     pickPracticeAnswer(answer) {
       this.practice.selectedAnswer = answer
       this.practice.showResult = true
+
+      // 调用后端提交答案
+      const q = this.currentPracticeQuestion
+      if (q && q.id) {
+        this.submitPracticeAnswer(q.id, answer).then(result => {
+          if (result) {
+            this.practice.lastSubmitResult = result
+          }
+        })
+      }
     },
     nextPracticeQuestion() {
       const questions = this.currentPracticeQuestions
@@ -429,6 +414,92 @@ export const useStudentStore = defineStore('student', {
 
       this.assistant.draftMessage = ''
       this.assistant.inputPlaceholder = '继续说出你的思考过程...'
+    },
+
+    // ========== 真实 API 对接 — 错题本 ==========
+
+    /** 从后端加载错题列表 */
+    async loadMistakes() {
+      try {
+        const res = await fetchMistakes()
+        // 后端返回 { code: 200, message: "success", data: [...] }
+        const list = (res && res.data) || []
+        this.wrongBook.mistakes = list.map(item => this._mapMistakeToCard(item))
+      } catch (e) {
+        console.error('加载错题失败:', e)
+      }
+    },
+
+    /** 手动添加错题 */
+    async addMistakeEntry(formData) {
+      try {
+        await createMistakeApi(formData)
+        // 添加成功后重新加载错题列表
+        await this.loadMistakes()
+        return true
+      } catch (e) {
+        console.error('添加错题失败:', e)
+        return false
+      }
+    },
+
+    /** 删除错题 */
+    async removeMistake(questionId) {
+      try {
+        await deleteMistake(questionId)
+        this.wrongBook.mistakes = this.wrongBook.mistakes.filter(m => m.questionId !== questionId)
+      } catch (e) {
+        console.error('删除错题失败:', e)
+      }
+    },
+
+    /** 取消收藏 */
+    removeFavorite(id) {
+      this.favorites = this.favorites.filter(f => f.id !== id)
+    },
+
+    /** 提交练习答案 */
+    async submitPracticeAnswer(questionId, userAnswer) {
+      try {
+        const res = await submitAnswer({ questionId, userAnswer })
+        return (res && res.data) || null
+      } catch (e) {
+        console.error('提交答案失败:', e)
+        return null
+      }
+    },
+
+    /** 将后端返回的 MistakeVO 映射为前端卡片格式 */
+    _mapMistakeToCard(item) {
+      const levelMap = { easy: 'weak', medium: 'medium', hard: 'weak' }
+      const labelMap = { easy: '未掌握', medium: '基本掌握', hard: '未掌握' }
+
+      // 格式化日期
+      let dateStr = ''
+      if (item.addedAt) {
+        const d = new Date(item.addedAt)
+        dateStr = `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} 收录`
+      }
+
+      // type 映射: single_choice → single
+      const typeMap = { single_choice: 'single', multi_choice: 'multi', fill: 'fill' }
+
+      return {
+        id: `mistake-${item.id}`,
+        questionId: item.questionId,
+        subject: 'math',  // TODO: 等后端补 subject 字段
+        type: typeMap[item.type] || 'single',
+        level: levelMap[item.difficulty] || 'medium',
+        levelLabel: labelMap[item.difficulty] || '基本掌握',
+        date: dateStr,
+        stem: item.stem || '',
+        root: item.knowledgePoint || '',
+        wrongCount: item.wrongCount || 1,
+        myAnswer: item.myAnswer || '',
+        correctAnswer: item.correctAnswer || '',
+        analysis: item.analysis || '暂未提供解析',
+        options: item.options || '[]',
+      }
     },
   },
 })

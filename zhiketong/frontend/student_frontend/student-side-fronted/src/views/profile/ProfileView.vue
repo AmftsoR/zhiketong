@@ -147,7 +147,8 @@ function handleMenu(key) {
   }
 
   if (key === 'favorite') {
-    router.push('/wrong-book')
+    router.push('/favorites')
+    return
   }
 }
 

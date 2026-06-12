@@ -122,11 +122,10 @@ function jumpToProfile() {
 }
 
 function continuePractice() {
+  // 每次点击递增进度并直接跳转到靶向练习界面
   if (studentStore.dashboard.practiceTask.completed < studentStore.dashboard.practiceTask.total) {
     studentStore.continuePractice()
-    return
   }
-
   router.push('/target-practice')
 }
 

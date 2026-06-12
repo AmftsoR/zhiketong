@@ -73,6 +73,7 @@
         <div class="mistake-card__actions">
           <button type="button" class="action-btn action-btn--ghost" @click="openAnalysis(item)">看解析</button>
           <button type="button" class="action-btn action-btn--primary" @click="doVariant(item)">做变式</button>
+          <button type="button" class="action-btn action-btn--danger" @click="handleDelete(item)">移除</button>
         </div>
       </div>
 
@@ -92,8 +93,98 @@
       </div>
     </section>
 
+    <!-- 添加错题弹窗 -->
+    <Teleport to="body">
+      <div v-if="showAddModal" class="add-modal-mask" @click.self="closeAddForm">
+        <div class="add-modal-card">
+          <div class="add-modal__head">
+            <h3>添加错题</h3>
+            <button type="button" class="add-modal__close" @click="closeAddForm" aria-label="关闭">×</button>
+          </div>
+
+          <form class="add-modal__form" @submit.prevent="submitNewMistake">
+            <div class="form-group">
+              <label>题目（题干）<span class="required">*</span></label>
+              <textarea
+                v-model="addForm.stem"
+                class="form-input form-textarea"
+                placeholder="请输入题目内容"
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>科目</label>
+                <select v-model="addForm.subject" class="form-input">
+                  <option value="math">数学</option>
+                  <option value="physics">物理</option>
+                  <option value="english">英语</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>题型</label>
+                <select v-model="addForm.type" class="form-input">
+                  <option value="single">单选题</option>
+                  <option value="fill">填空题</option>
+                  <option value="judge">判断题</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>正确答案<span class="required">*</span></label>
+                <input
+                  v-model="addForm.correctAnswer"
+                  class="form-input"
+                  placeholder="如：D"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label>我的答案</label>
+                <input
+                  v-model="addForm.myAnswer"
+                  class="form-input"
+                  placeholder="如：B（选填）"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>选项（JSON格式）</label>
+              <input
+                v-model="addForm.options"
+                class="form-input"
+                placeholder='如：[{"key":"A","text":"选项A"},{"key":"B","text":"选项B"}]'
+              />
+            </div>
+
+            <div class="form-group">
+              <label>解析</label>
+              <textarea
+                v-model="addForm.analysis"
+                class="form-input form-textarea"
+                placeholder="请输入题目解析（选填）"
+              ></textarea>
+            </div>
+
+            <p v-if="addFormError" class="add-modal__error">{{ addFormError }}</p>
+
+            <div class="add-modal__actions">
+              <button type="button" class="btn-cancel" @click="closeAddForm">取消</button>
+              <button type="submit" class="btn-submit" :disabled="addFormSubmitting">
+                {{ addFormSubmitting ? '提交中...' : '确认添加' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Teleport>
+
     <template #floating>
-      <button type="button" class="floating-add" @click="createReviewTask" aria-label="新增复习任务">
+      <button type="button" class="floating-add" @click="openAddForm" aria-label="添加错题">
         <span class="floating-add__icon"></span>
       </button>
     </template>
@@ -166,8 +257,55 @@ function doVariant(item) {
   router.push({ path: '/target-practice', query: { source: item.root } })
 }
 
-function createReviewTask() {
-  router.push('/analysis-report')
+// ===== 添加错题表单 =====
+const showAddModal = ref(false)
+const addForm = ref({ subject: 'math', type: 'single', stem: '', options: '', correctAnswer: '', myAnswer: '', analysis: '' })
+const addFormError = ref('')
+const addFormSubmitting = ref(false)
+
+function openAddForm() {
+  addForm.value = { subject: 'math', type: 'single', stem: '', options: '', correctAnswer: '', myAnswer: '', analysis: '' }
+  addFormError.value = ''
+  addFormSubmitting.value = false
+  showAddModal.value = true
+}
+
+function closeAddForm() {
+  showAddModal.value = false
+  addFormError.value = ''
+}
+
+async function submitNewMistake() {
+  addFormError.value = ''
+  addFormSubmitting.value = true
+
+  try {
+    const success = await studentStore.addMistakeEntry({
+      subject: addForm.value.subject,
+      type: addForm.value.type,
+      difficulty: 'medium',
+      stem: addForm.value.stem,
+      options: addForm.value.options || '[]',
+      correctAnswer: addForm.value.correctAnswer,
+      myAnswer: addForm.value.myAnswer || '',
+      analysis: addForm.value.analysis || '',
+    })
+
+    if (success) {
+      showAddModal.value = false
+    } else {
+      addFormError.value = '添加失败，请检查网络连接或稍后重试'
+    }
+  } catch (e) {
+    addFormError.value = '发生未知错误，请稍后重试'
+  } finally {
+    addFormSubmitting.value = false
+  }
+}
+
+async function handleDelete(item) {
+  const questionId = item.questionId || item.id
+  await studentStore.removeMistake(questionId)
 }
 
 function scrollToTop() {
@@ -177,6 +315,9 @@ function scrollToTop() {
 onMounted(() => {
   updateClock()
   clockTimer = window.setInterval(updateClock, 30000)
+
+  // 从后端加载错题数据
+  studentStore.loadMistakes()
 
   if (route.query.source) {
     openedAnalysisId.value = 'mistake-1'
@@ -405,6 +546,8 @@ onBeforeUnmount(() => {
   padding: 0 12px;
   font-size: 0.75rem;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .action-btn--ghost {
@@ -416,6 +559,11 @@ onBeforeUnmount(() => {
 .action-btn--primary {
   color: #6c5ce7;
   background: #f0efff;
+}
+
+.action-btn--danger {
+  color: #ff7675;
+  background: #ffebeb;
 }
 
 .analysis-panel {
@@ -509,6 +657,148 @@ onBeforeUnmount(() => {
 .floating-add__icon::after {
   width: 2px;
   height: 20px;
+}
+
+/* ===== 添加错题弹窗 ===== */
+.add-modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.add-modal-card {
+  width: 100%;
+  max-width: 400px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 14px;
+  padding: 22px 20px 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+
+.add-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.add-modal__head h3 {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.add-modal__close {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: #f5f5f5;
+  border-radius: 50%;
+  font-size: 1.125rem;
+  color: #999;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+
+.add-modal__form {
+  display: grid;
+  gap: 14px;
+}
+
+.form-group {
+  display: grid;
+  gap: 6px;
+  flex: 1;
+}
+
+.form-group label {
+  color: #555;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.required {
+  color: #ff7675;
+}
+
+.form-input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 0.8125rem;
+  color: #333;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.form-input:focus {
+  border-color: #6c5ce7;
+}
+
+.form-textarea {
+  height: 80px;
+  padding: 10px;
+  resize: vertical;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.add-modal__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.btn-cancel,
+.btn-submit {
+  min-width: 80px;
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  padding: 0 18px;
+}
+
+.btn-cancel {
+  color: #888;
+  background: #f5f5f5;
+}
+
+.btn-submit {
+  color: #fff;
+  background: #6c5ce7;
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.add-modal__error {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #ffebeb;
+  color: #ff7675;
+  font-size: 0.8125rem;
+  text-align: center;
 }
 
 @media (max-width: 420px) {
