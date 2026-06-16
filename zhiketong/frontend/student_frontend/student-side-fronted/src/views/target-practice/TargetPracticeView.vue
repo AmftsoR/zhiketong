@@ -5,7 +5,10 @@
         <button type="button" class="icon-button" @click="goBack" aria-label="返回">
           <span class="icon-button__arrow"></span>
         </button>
-        <h1 class="practice-topbar__title">靶向练习推送</h1>
+        <div class="practice-topbar__center">
+          <h1 class="practice-topbar__title">靶向练习推送</h1>
+          <span class="practice-topbar__subject">{{ subjectLabel }}</span>
+        </div>
         <div class="practice-topbar__spacer"></div>
       </div>
     </template>
@@ -132,7 +135,8 @@ const questionList = computed(() => studentStore.currentPracticeQuestions)
 const question = computed(() => studentStore.currentPracticeQuestion)
 const progressPercent = computed(() => Math.round((progress.value.current / progress.value.total) * 100))
 const nextButtonLabel = computed(() => (currentQuestionIndex.value < questionList.value.length - 1 ? '同类变式' : '完成本组'))
-const sourceHint = computed(() => route.query.source || '函数定义域')
+const subjectLabelMap = { math: '数学', physics: '物理', english: '英语' }
+const subjectLabel = computed(() => subjectLabelMap[studentStore.weaknessMap.selectedSubjectKey] || '数学')
 const currentQuestionIndex = computed(() => practice.currentQuestionIndex)
 
 let clockTimer = null
@@ -209,12 +213,28 @@ onBeforeUnmount(() => {
   margin-left: 6px;
 }
 
+.practice-topbar__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
 .practice-topbar__title {
   margin: 0;
   color: #000;
-  font-size: 1.0625rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   text-align: center;
+}
+
+.practice-topbar__subject {
+  font-size: 0.6875rem;
+  color: #6c5ce7;
+  background: #f0efff;
+  padding: 1px 10px;
+  border-radius: 999px;
+  font-weight: 600;
 }
 
 .practice-topbar__spacer {

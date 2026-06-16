@@ -113,13 +113,7 @@ const currentTime = ref('9:41')
 const practiceTask = computed(() => studentStore.dashboard.practiceTask)
 const taskProgress = computed(() => studentStore.taskProgress)
 const subjects = computed(() => studentStore.weaknessMap.subjects)
-
-const selectedSubjectKey = computed({
-  get: () => studentStore.weaknessMap.selectedSubjectKey,
-  set: (value) => {
-    studentStore.weaknessMap.selectedSubjectKey = value
-  },
-})
+const selectedSubjectKey = computed(() => studentStore.weaknessMap.selectedSubjectKey)
 
 const studyShortcuts = [
   { key: 'weakness', label: '薄弱点图谱', path: '/weakness-map', color: 'linear-gradient(135deg, #dbeafe, #c4b5fd)' },
@@ -152,7 +146,7 @@ function navigateTo(path) {
 }
 
 function selectSubject(key) {
-  selectedSubjectKey.value = key
+  studentStore.selectStudySubject(key)
 }
 
 function openAiAssistant() {
@@ -238,6 +232,7 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
 }
 
 .subject-pill--active {
