@@ -1,12 +1,17 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { useUserStore } from '../stores/userStore'
 
 const route = useRoute()
+const userStore = useUserStore()
 
 const classOptions = ['高一（1）班', '高一（2）班', '高二（3）班']
 const currentClass = ref(classOptions[0])
 const headerSearch = ref('')
+
+const teacherName = computed(() => userStore.user?.realName || '教师')
+const teacherInitial = computed(() => teacherName.value.slice(0, 1))
 
 const navItems = [
   { label: '数据总览', path: '/overview', icon: '总' },
@@ -57,8 +62,8 @@ const showHeaderSearch = computed(() => route.meta.showHeaderSearch === true)
         </div>
 
         <div class="profile">
-          <div class="avatar">李</div>
-          <span>李建国老师</span>
+          <div class="avatar">{{ teacherInitial }}</div>
+          <span>{{ teacherName }}老师</span>
         </div>
       </header>
 
