@@ -1,27 +1,17 @@
 import { request } from '../utils/request'
 
-const USE_MOCK = true
-
-const mockLogin = () =>
-  Promise.resolve({
-    code: 200,
-    message: 'success',
-    data: { token: 'mock-token', user: { id: 1, name: '张同学', className: '高一(1)班' } },
-  })
-
-const mockProfile = () =>
-  Promise.resolve({
-    code: 200,
-    message: 'success',
-    data: { id: 1, name: '张同学', className: '高一(1)班', studyDays: 128, points: 3450 },
-  })
-
+/**
+ * 登录
+ * @param {{username: string, password: string}} data
+ * @returns {Promise<{code: number, message: string, data: {token: string, user: object}}>}
+ */
 export function login(data) {
-  if (USE_MOCK) return mockLogin()
   return request('/login', { method: 'POST', body: data })
 }
 
-export function fetchProfile() {
-  if (USE_MOCK) return mockProfile()
-  return request('/profile')
+/**
+ * 获取当前登录用户信息
+ */
+export function fetchCurrentUser() {
+  return request('/user/current')
 }

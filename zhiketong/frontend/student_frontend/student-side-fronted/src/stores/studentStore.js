@@ -663,5 +663,15 @@ export const useStudentStore = defineStore('student', {
         options: item.options || '[]',
       }
     },
+
+    /** 将登录用户信息同步到 profile */
+    syncUserProfile(user) {
+      if (user && user.realName) {
+        this.profile.name = user.realName
+      }
+      if (user && user.className) {
+        this.profile.className = user.className
+      }
+    },
   },
 })
