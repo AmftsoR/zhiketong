@@ -7,6 +7,7 @@ import com.zhiketong.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
@@ -52,6 +53,31 @@ public class UserController {
         }
         boolean success = userService.register(user);
         return success ? R.ok("注册成功") : R.fail("注册失败");
+    }
+
+    /**
+     * 获取当前登录用户信息（JWT）
+     * GET /api/user/current — 由 LoginInterceptor 验证 JWT 并注入 userId
+     */
+    @GetMapping("/current")
+    public R<Map<String, Object>> getCurrentUser(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return R.fail(401, "未登录");
+        }
+        User user = userService.getById(userId);
+        if (user == null) {
+            return R.fail(404, "用户不存在");
+        }
+        user.setPassword(null);
+        Map<String, Object> userInfo = Map.of(
+            "id", user.getId(),
+            "username", user.getUsername(),
+            "realName", user.getRealName() != null ? user.getRealName() : "",
+            "className", user.getClassName() != null ? user.getClassName() : "",
+            "role", user.getRole()
+        );
+        return R.ok(userInfo);
     }
 
     /**

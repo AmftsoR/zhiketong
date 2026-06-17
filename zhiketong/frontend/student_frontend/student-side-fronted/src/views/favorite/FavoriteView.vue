@@ -90,7 +90,7 @@ function updateClock() {
 }
 
 function goBack() {
-  router.back()
+  router.push('/profile')
 }
 
 function toggleAnalysis(item) {

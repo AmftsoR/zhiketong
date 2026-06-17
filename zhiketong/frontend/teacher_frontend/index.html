@@ -1,10 +1,27 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vite App</title>
+    <title>智课通教师端</title>
+    <style>
+      /* Vue 挂载前防止白屏闪烁 */
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+      }
+      #app {
+        min-height: 100vh;
+      }
+      #app:empty::before {
+        content: '';
+        display: block;
+        height: 100vh;
+        background: #fff;
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>

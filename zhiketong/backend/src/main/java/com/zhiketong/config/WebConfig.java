@@ -26,7 +26,9 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/knowledge/**",        // 知识掌握度图谱
                         "/api/leaderboard",         // 排行榜
                         "/api/class/**",            // 班级相关
-                        "/api/teacher/**"           // 教师统计 + 学生详情
+                        "/api/teacher/**",          // 教师统计 + 学生详情
+                        "/api/report/shared",       // 分享报告查看（无需登录）
+                        "/api/ai/**"                // AI助手（Controller 内做用户解析）
                 );
     }
 

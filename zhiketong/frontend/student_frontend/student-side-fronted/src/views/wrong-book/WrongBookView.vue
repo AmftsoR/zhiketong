@@ -240,7 +240,7 @@ function updateClock() {
 }
 
 function goBack() {
-  router.back()
+  router.push('/study')
 }
 
 function navigateTo(path) {

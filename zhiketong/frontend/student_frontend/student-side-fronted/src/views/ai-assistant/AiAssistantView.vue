@@ -26,6 +26,7 @@
 
       <div class="message-bubble" :class="`message-bubble--${message.role}`">
         <p v-for="(line, index) in message.lines" :key="`${message.id}-${index}`" v-html="line"></p>
+        <span v-if="message.streaming && (!message.lines.length || (message.lines.length === 1 && !message.lines[0]))" class="typing-dots typing-dots--inline"><span></span><span></span><span></span></span>
 
         <template v-if="message.quickActions?.length">
           <div class="message-actions">
@@ -50,7 +51,17 @@
       </div>
     </article>
 
-    <article v-if="studentThinking" class="message-row message-row--student">
+    <!-- 流式打字指示器 -->
+    <article v-if="isStreaming" class="message-row message-row--assistant">
+      <div class="message-avatar message-avatar--assistant">
+        <span>AI</span>
+      </div>
+      <div class="message-bubble message-bubble--assistant message-bubble--typing">
+        <span class="typing-dots"><span></span><span></span><span></span></span>
+      </div>
+    </article>
+
+    <article v-if="studentThinking && !isStreaming" class="message-row message-row--student">
       <div class="message-avatar message-avatar--student">
         <span>👦</span>
       </div>
@@ -69,8 +80,9 @@
           <span>{{ inputPlaceholder }}</span>
         </button>
 
-        <button type="button" class="assistant-footer__send" @click="sendMessage" aria-label="发送">
-          <span class="assistant-footer__send-icon"></span>
+        <button type="button" class="assistant-footer__send" :class="{ 'assistant-footer__send--disabled': isStreaming }" @click="sendMessage" :disabled="isStreaming" aria-label="发送">
+          <span v-if="!isStreaming" class="assistant-footer__send-icon"></span>
+          <span v-else class="assistant-footer__send-spinner"></span>
         </button>
       </footer>
     </template>
@@ -82,6 +94,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppMobileFrame from '../../components/layout/AppMobileFrame.vue'
 import { useStudentStore } from '../../stores/studentStore'
+import { streamChat } from '../../api/ai'
 
 const router = useRouter()
 const studentStore = useStudentStore()
@@ -99,8 +112,10 @@ const inputPlaceholder = computed({
   set: (value) => studentStore.setAssistantPlaceholder(value),
 })
 const studentThinking = computed(() => Boolean(draftMessage.value))
+const isStreaming = computed(() => assistant.streaming)
 
 let clockTimer = null
+let activeController = null
 
 function updateClock() {
   const now = new Date()
@@ -117,17 +132,23 @@ function scrollToBottom() {
 }
 
 function goBack() {
-  router.back()
+  router.push('/study')
 }
 
 function clearChat() {
+  // 取消正在进行的流式请求
+  if (activeController) {
+    activeController.abort()
+    activeController = null
+  }
   studentStore.clearAssistantChat()
   scrollToBottom()
 }
 
 function handleQuickAction(actionKey) {
   if (actionKey === 'course') {
-    inputPlaceholder.value = '已为你打开课件入口...'
+    inputPlaceholder.value = '请帮我查看相关课件内容'
+    sendMessage()
     return
   }
 
@@ -137,20 +158,67 @@ function handleQuickAction(actionKey) {
 }
 
 function pickAttachment() {
-  inputPlaceholder.value = '查看课件：函数定义域基础'
+  inputPlaceholder.value = '请帮我查看相关课件'
 }
 
 function focusInput() {
-  draftMessage.value = '老师，我先试着说一下：分母不能为0，所以 x-1 ≠ 0。'
+  if (!draftMessage.value) {
+    draftMessage.value = ''
+  }
   scrollToBottom()
 }
 
+function buildHistory() {
+  // 从现有消息构建对话历史（排除欢迎消息和流式中的消息）
+  const history = []
+  for (const msg of assistant.messages) {
+    if (msg.streaming || msg.id === 'assistant-welcome') continue
+    if (msg.role === 'student' && msg.lines.length > 0) {
+      history.push({ role: 'user', content: msg.lines.join('\n') })
+    } else if (msg.role === 'assistant' && msg.lines.length > 0) {
+      history.push({ role: 'assistant', content: msg.lines.join('\n') })
+    }
+  }
+  return history
+}
+
 function sendMessage() {
-  const content = draftMessage.value.trim() || '我想先确认一下：是不是要先找分母为 0 的情况？'
-  studentStore.sendAssistantMessage(content)
+  if (isStreaming.value) return // 流式进行中不允许发送
+
+  const content = draftMessage.value.trim()
+  if (!content) {
+    // 没有输入内容时不发送
+    return
+  }
+
+  // 添加用户消息
+  studentStore.addStudentMessage(content)
   draftMessage.value = ''
   inputPlaceholder.value = '继续说出你的思考过程...'
   scrollToBottom()
+
+  // 开始AI流式回复
+  studentStore.startAssistantStream()
+  scrollToBottom()
+
+  const history = buildHistory()
+
+  activeController = streamChat(content, history, {
+    onToken(token) {
+      studentStore.appendStreamToken(token)
+      scrollToBottom()
+    },
+    onDone(fullContent) {
+      studentStore.finishAssistantStream(fullContent)
+      activeController = null
+      scrollToBottom()
+    },
+    onError(err) {
+      studentStore.errorAssistantStream(err.message || '未知错误')
+      activeController = null
+      scrollToBottom()
+    },
+  })
 }
 
 onMounted(() => {
@@ -162,6 +230,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (clockTimer) {
     window.clearInterval(clockTimer)
+  }
+  if (activeController) {
+    activeController.abort()
   }
 })
 </script>
@@ -416,6 +487,68 @@ onBeforeUnmount(() => {
   height: 14px;
   background: #6c5ce7;
   clip-path: polygon(0 50%, 100% 0, 72% 50%, 100% 100%);
+}
+
+.message-bubble--typing {
+  min-width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px;
+}
+
+.typing-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.typing-dots--inline {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+.typing-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6c5ce7;
+  animation: typing-bounce 1.4s ease-in-out infinite;
+}
+
+.typing-dots span:nth-child(1) { animation-delay: 0s; }
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+.assistant-footer__send--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.assistant-footer__send-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ddd;
+  border-top-color: #6c5ce7;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 420px) {

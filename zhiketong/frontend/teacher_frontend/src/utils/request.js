@@ -1,8 +1,18 @@
 const BASE_URL = '/api'
+const TOKEN_KEY = 'zhiketong_teacher_token'
 
-/**
- * 统一 HTTP 请求封装（基于 fetch）
- */
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY) || ''
+}
+
+export function saveToken(token) {
+  localStorage.setItem(TOKEN_KEY, token)
+}
+
+export function clearToken() {
+  localStorage.removeItem(TOKEN_KEY)
+}
+
 export async function request(url, options = {}) {
   const fullUrl = url.startsWith('http') ? url : `${BASE_URL}${url}`
 
@@ -14,19 +24,18 @@ export async function request(url, options = {}) {
     ...options,
   }
 
-  // 自动序列化 JSON body
-  if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
-    config.body = JSON.stringify(options.body)
-  }
-
-  // 从 localStorage 读取 token 并附加
-  const token = localStorage.getItem('token')
+  const token = getToken()
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`
   }
 
+  if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
+    config.body = JSON.stringify(options.body)
+  }
+
   try {
     const response = await fetch(fullUrl, config)
+
     const contentType = response.headers.get('content-type') || ''
     let data
     if (contentType.includes('application/json')) {
@@ -36,6 +45,9 @@ export async function request(url, options = {}) {
     }
 
     if (!response.ok) {
+      if (response.status === 401 || (data && data.code === 401)) {
+        clearToken()
+      }
       const message = (data && data.message) || `请求失败 (${response.status})`
       throw new Error(message)
     }

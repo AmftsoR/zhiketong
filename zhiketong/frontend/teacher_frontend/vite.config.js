@@ -2,13 +2,13 @@ import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
-    vueDevTools(),
+    // vueDevTools 暂时注释：与 Vite 6 存在兼容性问题，会导致应用无法挂载
+    // vueDevTools(),
   ],
   resolve: {
     alias: {

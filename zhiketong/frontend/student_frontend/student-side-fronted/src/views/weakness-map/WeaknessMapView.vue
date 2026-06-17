@@ -329,7 +329,7 @@ function updateClock() {
 }
 
 function goBack() {
-  router.back()
+  router.push('/study')
 }
 
 function selectSubject(key) {

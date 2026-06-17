@@ -120,7 +120,7 @@ public class MistakeServiceImpl implements MistakeService {
                 vo.setStem(question.getTitle());
                 vo.setOptions(question.getOptions());
                 vo.setCorrectAnswer(parseAnswer(question.getAnswer()));
-                vo.setAnalysis(question.getExplanation() != null ? question.getExplanation() : "");
+                vo.setAnalysis(question.getExplanation());
                 if (question.getKnowledgePointId() != null && kpMap.containsKey(question.getKnowledgePointId())) {
                     KnowledgePoint kp = kpMap.get(question.getKnowledgePointId());
                     vo.setKnowledgePoint(kp.getName());

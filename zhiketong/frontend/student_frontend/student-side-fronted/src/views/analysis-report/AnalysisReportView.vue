@@ -14,6 +14,7 @@
       </div>
     </template>
 
+    <div ref="reportContainer" class="report-content">
     <section class="hero-card page-card">
       <div class="hero-card__score">
         <span>{{ report.overallScore }}</span>
@@ -77,13 +78,40 @@
     </section>
 
     <section class="report-actions page-card">
-      <button type="button" class="report-actions__button report-actions__button--ghost" @click="downloadReport">
-        导出报告
+      <button type="button" class="report-actions__button report-actions__button--ghost" @click="downloadReport" :disabled="loading">
+        {{ loading ? '导出中...' : '导出报告' }}
       </button>
-      <button type="button" class="report-actions__button report-actions__button--primary" @click="shareReport">
-        分享给老师
+      <button type="button" class="report-actions__button report-actions__button--primary" @click="shareReport" :disabled="loading">
+        {{ loading ? '分享中...' : '分享给老师' }}
       </button>
     </section>
+    </div><!-- /reportContainer -->
+
+    <!-- 分享弹窗 -->
+    <teleport to="body">
+      <transition name="fade">
+        <div v-if="shareDialogVisible" class="share-overlay" @click.self="closeShareDialog">
+          <div class="share-dialog">
+            <h3 class="share-dialog__title">分享学情报告</h3>
+            <p class="share-dialog__desc">将以下链接发送给老师，老师即可查看你的学情报告</p>
+            <div class="share-dialog__input-row">
+              <input
+                type="text"
+                class="share-dialog__input"
+                :value="shareUrl"
+                readonly
+                @focus="$event.target.select()"
+              />
+              <button type="button" class="share-dialog__copy-btn" @click="copyShareLink">
+                {{ copySuccess ? '已复制 ✓' : '复制' }}
+              </button>
+            </div>
+            <p class="share-dialog__expire">链接有效期 7 天</p>
+            <button type="button" class="share-dialog__close" @click="closeShareDialog">关闭</button>
+          </div>
+        </div>
+      </transition>
+    </teleport>
 
     <template #floating>
       <transition name="fade-slide">
@@ -107,13 +135,23 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
 import AppMobileFrame from '../../components/layout/AppMobileFrame.vue'
 import { useStudentStore } from '../../stores/studentStore'
+import { fetchMyReport, shareReport as shareReportApi } from '../../api/report'
 
 const router = useRouter()
 const studentStore = useStudentStore()
 
 const currentTime = ref('9:41')
+const reportContainer = ref(null)
+const loading = ref(false)
+const shareDialogVisible = ref(false)
+const shareUrl = ref('')
+const shareToken = ref('')
+const copySuccess = ref(false)
+
 const selectedMonthKey = computed({
   get: () => studentStore.analysis.selectedMonthKey,
   set: (value) => studentStore.setReportMonth(value),
@@ -134,28 +172,120 @@ function updateClock() {
 }
 
 function goBack() {
-  router.back()
+  router.push('/study')
 }
 
 function toggleMonthMenu() {
   studentStore.toggleReportMonthMenu()
 }
 
-function selectMonth(key) {
+async function selectMonth(key) {
   studentStore.setReportMonth(key)
+  await loadReportData()
 }
 
-function downloadReport() {
-  showMonthMenu.value = false
+async function loadReportData() {
+  loading.value = true
+  try {
+    const res = await fetchMyReport(selectedMonthKey.value)
+    if (res && res.data) {
+      // 将后端数据同步到 store
+      studentStore.analysis.reportData[selectedMonthKey.value] = res.data
+    }
+  } catch (e) {
+    console.error('加载报告数据失败:', e)
+    // 失败时保留 store 中的硬编码数据作为 fallback
+  } finally {
+    loading.value = false
+  }
 }
 
-function shareReport() {
-  router.push('/profile')
+async function downloadReport() {
+  studentStore.analysis.showMonthMenu = false
+
+  if (!reportContainer.value) return
+
+  try {
+    loading.value = true
+    const canvas = await html2canvas(reportContainer.value, {
+      backgroundColor: '#ffffff',
+      scale: 2,
+      useCORS: true,
+    })
+
+    const imgData = canvas.toDataURL('image/png')
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const imgWidth = pageWidth - 20
+    const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+    let heightLeft = imgHeight
+    let position = 10
+
+    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight)
+    heightLeft -= pageHeight - 20
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight + 10
+      pdf.addPage()
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight)
+      heightLeft -= pageHeight - 20
+    }
+
+    pdf.save('学情报告.pdf')
+  } catch (e) {
+    console.error('导出报告失败:', e)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function shareReport() {
+  studentStore.analysis.showMonthMenu = false
+
+  try {
+    loading.value = true
+    const reportJson = JSON.stringify(report.value)
+    const res = await shareReportApi(reportJson)
+    if (res && res.data) {
+      shareToken.value = res.data.shareToken
+      shareUrl.value = window.location.origin + res.data.shareUrl
+      shareDialogVisible.value = true
+    }
+  } catch (e) {
+    console.error('分享报告失败:', e)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function copyShareLink() {
+  try {
+    await navigator.clipboard.writeText(shareUrl.value)
+    copySuccess.value = true
+    setTimeout(() => { copySuccess.value = false }, 2000)
+  } catch {
+    // fallback for older browsers
+    const textarea = document.createElement('textarea')
+    textarea.value = shareUrl.value
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+    copySuccess.value = true
+    setTimeout(() => { copySuccess.value = false }, 2000)
+  }
+}
+
+function closeShareDialog() {
+  shareDialogVisible.value = false
 }
 
 onMounted(() => {
   updateClock()
   clockTimer = window.setInterval(updateClock, 30000)
+  loadReportData()
 })
 
 onBeforeUnmount(() => {
@@ -469,6 +599,94 @@ onBeforeUnmount(() => {
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+.share-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.share-dialog {
+  width: 100%;
+  max-width: 340px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.share-dialog__title {
+  margin: 0;
+  color: #000;
+  font-size: 1.0625rem;
+}
+
+.share-dialog__desc {
+  margin: 10px 0 0;
+  color: #999;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.share-dialog__input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.share-dialog__input {
+  flex: 1 1 0;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  color: #333;
+  background: #fafafa;
+}
+
+.share-dialog__copy-btn {
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #6c5ce7;
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.share-dialog__expire {
+  margin: 10px 0 0;
+  color: #999;
+  font-size: 0.6875rem;
+}
+
+.share-dialog__close {
+  margin-top: 16px;
+  border: 0;
+  background: transparent;
+  color: #999;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 @media (max-width: 420px) {

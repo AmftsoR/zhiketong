@@ -8,9 +8,11 @@ import AnalysisReportView from '../views/analysis-report/AnalysisReportView.vue'
 import AiAssistantView from '../views/ai-assistant/AiAssistantView.vue'
 import ProfileView from '../views/profile/ProfileView.vue'
 import FavoriteView from '../views/favorite/FavoriteView.vue'
+import LoginView from '../views/login/LoginView.vue'
 import NotFoundView from '../views/not-found/NotFoundView.vue'
 
 const routes = [
+  { path: '/login', name: 'login', component: LoginView, meta: { title: '登录', noAuth: true } },
   { path: '/', redirect: '/home' },
   { path: '/home', name: 'home', component: HomeView, meta: { title: '首页界面' } },
   {
@@ -60,6 +62,21 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 }
   },
+})
+
+// 路由守卫：未登录重定向到登录页
+router.beforeEach(async (to) => {
+  if (to.meta.noAuth) return true
+
+  // 懒加载 userStore，避免循环依赖
+  const { useUserStore } = await import('../stores/userStore')
+  const userStore = useUserStore()
+
+  if (!userStore.isLoggedIn) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+
+  return true
 })
 
 router.afterEach((to) => {
