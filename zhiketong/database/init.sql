@@ -11,15 +11,27 @@ CREATE DATABASE IF NOT EXISTS `zhiketong_db`
 USE `zhiketong_db`;
 
 -- -----------------------------------------------------------
--- 1. 用户表
+-- 1. 班级表
+-- -----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `class` (
+  `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '班级ID',
+  `name`        VARCHAR(50)  NOT NULL              COMMENT '班级名称',
+  `teacher_id`  BIGINT       DEFAULT NULL          COMMENT '班主任ID',
+  `create_time` DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='班级表';
+
+-- -----------------------------------------------------------
+-- 2. 用户表
 -- -----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `user` (
   `id`         BIGINT       NOT NULL AUTO_INCREMENT COMMENT '用户ID',
   `username`   VARCHAR(50)  NOT NULL              COMMENT '用户名',
-  `password`   VARCHAR(255) NOT NULL              COMMENT '密码（加密后）',
+  `password`   VARCHAR(255) NOT NULL              COMMENT '密码（BCrypt加密）',
   `role`       VARCHAR(20)  NOT NULL DEFAULT 'student' COMMENT '角色：student/teacher',
   `real_name`  VARCHAR(50)  DEFAULT NULL          COMMENT '真实姓名',
-  `class_name` VARCHAR(50)  DEFAULT NULL          COMMENT '班级（学生用）',
+  `class_id`   BIGINT       DEFAULT NULL          COMMENT '所属班级ID',
+  `class_name` VARCHAR(50)  DEFAULT NULL          COMMENT '班级名称（冗余）',
   `created_at` DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_username` (`username`)

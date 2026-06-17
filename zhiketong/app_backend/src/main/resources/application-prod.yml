@@ -1,0 +1,7 @@
+# 生产环境配置：连接远程 MySQL
+spring:
+  datasource:
+    url: jdbc:mysql://【同事IP】:3306/zhiketong?useSSL=false&serverTimezone=Asia/Shanghai
+    username: 【用户名】
+    password: 【密码】
+    driver-class-name: com.mysql.cj.jdbc.Driver

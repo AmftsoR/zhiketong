@@ -6,6 +6,7 @@ import com.zhiketong.entity.UserAnswer;
 import com.zhiketong.mapper.QuestionBankMapper;
 import com.zhiketong.mapper.UserAnswerMapper;
 import com.zhiketong.service.MistakeService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +30,13 @@ public class AnswerController {
      * 请求体示例: {"questionId": 1, "userAnswer": "A"}
      */
     @PostMapping("/submit")
-    public R<Map<String, Object>> submitAnswer(@RequestBody Map<String, Object> payload) {
-        Long userId = 1L; // TODO: 从登录信息获取
+    public R<Map<String, Object>> submitAnswer(@RequestBody Map<String, Object> payload,
+                                               HttpServletRequest request) {
+        // 从登录拦截器注入的 attribute 获取当前用户 ID
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            userId = 1L; // fallback：未登录时使用默认用户
+        }
         Long questionId = Long.valueOf(payload.get("questionId").toString());
         String userAnswer = payload.get("userAnswer").toString();
 

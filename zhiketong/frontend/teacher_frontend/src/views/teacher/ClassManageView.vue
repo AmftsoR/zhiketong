@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { fetchStudentDetail, fetchLeaderboard } from '../../api/teacher'
 
 const search = ref('')
 
@@ -93,6 +94,31 @@ function tagClass(tag) {
   if (tag === '稳定型') return 'tag-stable'
   return 'tag-warning'
 }
+
+// ===== 从后端加载数据 =====
+onMounted(async () => {
+  try {
+    const res = await fetchLeaderboard(/* classId= */ null, 50)
+    if (res?.data?.length) {
+      const apiStudents = res.data.map(entry => ({
+        name: entry.studentName,
+        status: '在线',
+        completion: Math.min(100, (entry.totalAnswers || 0) * 10),
+        accuracy: entry.accuracy,
+        tag: entry.accuracy >= 80 ? '潜力型' : entry.accuracy >= 50 ? '稳定型' : '预警',
+        trend: `答题${entry.totalAnswers}次`,
+        weak: '',
+        suggestion: '',
+      }))
+      if (apiStudents.length > 0) {
+        students.value = apiStudents
+        selectedName.value = apiStudents[0].name
+      }
+    }
+  } catch (e) {
+    console.warn('API 数据加载失败，使用默认数据:', e.message)
+  }
+})
 </script>
 
 <template>

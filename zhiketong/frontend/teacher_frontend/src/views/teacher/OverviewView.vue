@@ -1,11 +1,57 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { fetchClassStatistics } from '../../api/teacher'
+import { fetchTeacherClasses } from '../../api/class'
+import { fetchLeaderboard } from '../../api/teacher'
+
+const TEACHER_ID = 3 // TODO: 从登录态获取
 
 const selectedRange = ref('近7天')
 const selectedClass = ref('高一（1）班')
 
 const ranges = ['近7天', '近30天']
-const classes = ['高一（1）班', '高一（2）班']
+const classes = ref(['高一（1）班', '高一（2）班'])
+
+// ===== 从后端加载数据 =====
+onMounted(async () => {
+  try {
+    // 加载班级列表
+    const classRes = await fetchTeacherClasses(TEACHER_ID)
+    if (classRes?.data?.length) {
+      classes.value = classRes.data.map(c => c.name)
+      if (!selectedClass.value || !classes.value.includes(selectedClass.value)) {
+        selectedClass.value = classes.value[0]
+      }
+    }
+
+    // 加载班级统计
+    const statsRes = await fetchClassStatistics(TEACHER_ID)
+    if (statsRes?.data?.length) {
+      const firstClass = statsRes.data[0]
+      if (firstClass) {
+        metricMap['近7天'] = [
+          { label: '班级平均正确率', value: `${Math.round((firstClass.averageCorrectRate || 0) * 100)}%`, trend: '' },
+          { label: '班级数', value: `${statsRes.data.length}个`, trend: '' },
+        ]
+      }
+    }
+
+    // 加载排行榜数据
+    const lbRes = await fetchLeaderboard(/* classId= */ null, 5)
+    if (lbRes?.data?.length) {
+      focusStudents.length = 0
+      lbRes.data.forEach(entry => {
+        focusStudents.push({
+          name: entry.studentName,
+          score: entry.accuracy,
+          reason: `答题${entry.totalAnswers}次，正确率${entry.accuracy}%`,
+        })
+      })
+    }
+  } catch (e) {
+    console.warn('API 数据加载失败，使用默认数据:', e.message)
+  }
+})
 
 const metricMap = {
   '近7天': [

@@ -1,0 +1,12 @@
+# 开发环境配置：连接本地 MySQL
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/zhiketong_db?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: ZOUYX7800zyx.
+  sql:
+    init:
+      mode: always               # 每次启动都执行初始化脚本
+      schema-locations: classpath:db/schema-mysql.sql   # 建表语句位置
+      data-locations: classpath:db/data-mysql.sql       # 测试数据位置

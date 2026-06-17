@@ -1,0 +1,22 @@
+# 主配置文件，公共配置（不包含数据源）
+spring:
+  application:
+    name: zhiketong-backend
+  profiles:
+    active: dev   # 默认激活 dev 环境（本地MySQL开发）
+  web:
+    resources:
+      static-locations: classpath:/static/,file:uploads/   # 静态资源位置（用于访问上传的图片）
+
+server:
+  port: 8080
+  tomcat:
+    uri-encoding: UTF-8
+
+# MyBatis-Plus 全局配置
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   # 打印SQL日志
+  global-config:
+    db-config:
+      id-type: auto   # 主键自增

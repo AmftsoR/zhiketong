@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { fetchMistakes, createMistake as createMistakeApi, deleteMistake, submitAnswer } from '../api/mistake'
+import { fetchRandomQuestion } from '../api/question'
 
 const practiceQuestionBanks = {
   basic: [
@@ -456,6 +457,44 @@ export const useStudentStore = defineStore('student', {
     /** 取消收藏 */
     removeFavorite(id) {
       this.favorites = this.favorites.filter(f => f.id !== id)
+    },
+
+    /** 从后端加载随机题目用于练习 */
+    async loadPracticeQuestion() {
+      try {
+        const res = await fetchRandomQuestion(this.practice.activeMode)
+        // 后端返回 { code: 200, data: QuestionBank }
+        const q = res?.data || res
+        if (q && q.id) {
+          // 将后端格式转为前端卡片格式
+          const formatted = {
+            id: q.id,
+            type: q.type === 'single_choice' ? '单选题' : q.type,
+            source: q.knowledgePointId ? `知识点${q.knowledgePointId}` : '',
+            stem: q.title || '',
+            options: typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []),
+            correctAnswer: q.answer || '',
+            analysis: q.explanation || '',
+          }
+          // 存入 question bank 供练习使用
+          const mode = this.practice.activeMode
+          if (!this.practice.questionBanks[mode]) {
+            this.practice.questionBanks[mode] = []
+          }
+          // 替换或添加
+          const existingIdx = this.practice.questionBanks[mode].findIndex(x => x.id === formatted.id)
+          if (existingIdx >= 0) {
+            this.practice.questionBanks[mode][existingIdx] = formatted
+          } else {
+            this.practice.questionBanks[mode].push(formatted)
+          }
+          this.practice.currentQuestionIndex = this.practice.questionBanks[mode].length - 1
+          return formatted
+        }
+      } catch (e) {
+        console.error('加载题目失败:', e)
+      }
+      return null
     },
 
     /** 提交练习答案 */
