@@ -1,5 +1,10 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useUserStore } from '../../stores/userStore'
+
+const userStore = useUserStore()
+const teacherName = computed(() => userStore.user?.realName || '教师')
+const teacherInitial = computed(() => teacherName.value.slice(0, 1))
 
 const sections = ref([
   {
@@ -94,9 +99,9 @@ function saveSettings() {
 <template>
   <section class="page">
     <header class="head-card">
-      <div class="teacher-avatar">李</div>
+      <div class="teacher-avatar">{{ teacherInitial }}</div>
       <div>
-        <h1>李建国 老师</h1>
+        <h1>{{ teacherName }}</h1>
         <p>示范性高级中学 · 高三数学教研组 · 当前授课：高三（1）班、高三（2）班</p>
       </div>
       <button class="save-btn" @click="saveSettings">保存配置</button>

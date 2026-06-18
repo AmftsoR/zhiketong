@@ -35,7 +35,7 @@ export function streamChat(message, history = [], callbacks = {}) {
       }
 
       const reader = response.body.getReader()
-      const decoder = new TextDecoder()
+      const decoder = new TextDecoder('utf-8')
       let buffer = ''
       let fullContent = ''
 
@@ -47,30 +47,27 @@ export function streamChat(message, history = [], callbacks = {}) {
         const lines = buffer.split('\n')
         buffer = lines.pop() || ''
 
+        let currentEvent = 'token'
         for (const line of lines) {
-          if (line.startsWith('event:token')) continue
-          if (line.startsWith('event:error')) continue
-          if (line.startsWith('event:done')) continue
-
-          if (line.startsWith('data:')) {
+          if (line === '') {
+            // SSE 事件边界，重置事件类型
+            currentEvent = 'token'
+            continue
+          }
+          if (line.startsWith('event:')) {
+            currentEvent = line.substring(6).trim()
+          } else if (line.startsWith('data:')) {
             const data = line.substring(5).trim()
             if (data === '[DONE]') continue
 
-            // 检查前一行的事件类型
-            const prevLines = lines.slice(0, lines.indexOf(line))
-            const eventLine = prevLines.reverse().find(l => l.startsWith('event:'))
-            const eventType = eventLine ? eventLine.substring(6).trim() : 'token'
-
-            if (eventType === 'error') {
+            if (currentEvent === 'error') {
               callbacks.onError && callbacks.onError(new Error(data))
               return
             }
-
-            if (eventType === 'done') {
+            if (currentEvent === 'done') {
               callbacks.onDone && callbacks.onDone(data)
               return
             }
-
             // token 事件
             fullContent += data
             callbacks.onToken && callbacks.onToken(data, fullContent)

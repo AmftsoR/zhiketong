@@ -56,6 +56,24 @@
       <button type="button" class="primary-action" @click="continuePractice">继续练习</button>
     </section>
 
+    <section v-if="teacherHomeworks.length" class="home-task page-card">
+      <div class="section-head">
+        <h2>教师发布作业</h2>
+        <span class="section-head__badge">{{ teacherHomeworks.length }}项</span>
+      </div>
+      <div v-for="hw in teacherHomeworks" :key="hw.id" class="hw-item" @click="openHomework(hw)">
+        <div class="hw-item__head">
+          <span class="hw-item__title">{{ hw.title }}</span>
+          <span class="hw-item__diff" :class="'hw-diff--' + hw.difficulty">{{ diffLabel(hw.difficulty) }}</span>
+        </div>
+        <div class="hw-item__meta">
+          <span>{{ hw.className }}</span>
+          <span v-if="hw.deadline">截止: {{ hw.deadline }}</span>
+          <span>共{{ hw.questions ? hw.questions.length : 0 }}题</span>
+        </div>
+      </div>
+    </section>
+
     <section class="home-wrong-book page-card">
       <div class="section-head section-head--space">
         <h2>最近错题自动收录</h2>
@@ -86,10 +104,26 @@ import { useRoute, useRouter } from 'vue-router'
 import AppMobileFrame from '../../components/layout/AppMobileFrame.vue'
 import BottomNav from '../../components/layout/BottomNav.vue'
 import { useStudentStore } from '../../stores/studentStore'
+import { fetchMyHomework } from '../../api/homework'
+import { useUserStore } from '../../stores/userStore'
 
 const router = useRouter()
 const route = useRoute()
 const studentStore = useStudentStore()
+const userStore = useUserStore()
+
+const teacherHomeworks = ref([])
+async function loadHomeworks() {
+  try {
+    const className = userStore.user?.className || '高三(1)班'
+    const r = await fetchMyHomework(className)
+    if (r && r.code === 200) teacherHomeworks.value = r.data || []
+  } catch (e) { console.error('加载作业失败:', e) }
+}
+
+function openHomework(hw) { router.push('/homework-do?id=' + hw.id) }
+
+function diffLabel(d) { return d === 'easy' ? '基础' : d === 'hard' ? '困难' : '中等' }
 
 const currentTime = ref('9:41')
 const studyMinutes = computed(() => studentStore.dashboard.studyMinutes)
@@ -136,6 +170,7 @@ function resetTaskProgress() {
 onMounted(() => {
   updateClock()
   clockTimer = window.setInterval(updateClock, 30000)
+  loadHomeworks()
 })
 
 onBeforeUnmount(() => {
@@ -332,6 +367,17 @@ onBeforeUnmount(() => {
   background: #6c5ce7;
   transition: width 0.3s ease;
 }
+
+.hw-item { padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer; }
+.hw-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.hw-item:active { opacity: 0.7; }
+.hw-item__head { display: flex; align-items: center; gap: 8px; }
+.hw-item__title { font-size: 0.875rem; font-weight: 700; color: #333; flex: 1; }
+.hw-item__diff { border-radius: 4px; padding: 2px 6px; font-size: 0.625rem; font-weight: 700; }
+.hw-diff--easy { background: #dcfce7; color: #16a34a; }
+.hw-diff--medium { background: #fef3c7; color: #d97706; }
+.hw-diff--hard { background: #fee2e2; color: #dc2626; }
+.hw-item__meta { display: flex; gap: 12px; margin-top: 6px; color: #999; font-size: 0.75rem; }
 
 .primary-action {
   margin-top: 14px;

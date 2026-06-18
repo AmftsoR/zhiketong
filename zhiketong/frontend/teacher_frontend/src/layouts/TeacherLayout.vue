@@ -18,6 +18,7 @@ const navItems = [
   { label: '班级管理', path: '/class', icon: '班' },
   { label: '学情分析', path: '/analysis', icon: '析' },
   { label: '题库管理', path: '/bank', icon: '题' },
+  { label: '作业管理', path: '/homework', icon: '业' },
   { label: '设置中心', path: '/settings', icon: '设' },
 ]
 
@@ -63,7 +64,7 @@ const showHeaderSearch = computed(() => route.meta.showHeaderSearch === true)
 
         <div class="profile">
           <div class="avatar">{{ teacherInitial }}</div>
-          <span>{{ teacherName }}老师</span>
+          <span>{{ teacherName }}</span>
         </div>
       </header>
 

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiketong.backend.mapper.UserAnswerMapper">
+
+    <select id="selectWeakKnowledgePointIds" resultType="java.lang.Long">
+        SELECT qb.knowledge_point_id
+        FROM user_answer ua
+        JOIN question_bank qb ON qb.id = ua.question_id
+        WHERE ua.user_id = #{userId}
+          AND ua.is_correct = 0
+          AND qb.knowledge_point_id IS NOT NULL
+        GROUP BY qb.knowledge_point_id
+        ORDER BY COUNT(*) DESC, MAX(ua.answered_at) DESC
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <select id="selectKnowledgePointStats" resultType="com.zhiketong.backend.dto.KnowledgePointStatVO">
+        SELECT
+            kp.id AS knowledgePointId,
+            kp.name AS knowledgePointName,
+            COUNT(ua.id) AS totalCount,
+            SUM(CASE WHEN ua.is_correct = 0 THEN 1 ELSE 0 END) AS wrongCount,
+            ROUND(SUM(CASE WHEN ua.is_correct = 1 THEN 1 ELSE 0 END) / COUNT(ua.id), 4) AS accuracyRate
+        FROM user_answer ua
+        JOIN question_bank qb ON qb.id = ua.question_id
+        JOIN knowledge_point kp ON kp.id = qb.knowledge_point_id
+        JOIN `user` u ON u.id = ua.user_id
+        <where>
+            <if test="studentIds != null and studentIds.size() > 0">
+                ua.user_id IN
+                <foreach collection="studentIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="knowledgePointIds != null and knowledgePointIds.size() > 0">
+                AND qb.knowledge_point_id IN
+                <foreach collection="knowledgePointIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="className != null and className != ''">
+                AND u.class_name = #{className}
+            </if>
+        </where>
+        GROUP BY kp.id, kp.name
+        ORDER BY accuracyRate ASC, wrongCount DESC
+    </select>
+</mapper>

@@ -1,5 +1,7 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { fetchKnowledgeTree } from '../../api/knowledge'
+import { fetchQuestions } from '../../api/questions'
 
 const nodes = [
   { id: 1, name: '函数基本概念', level: 'good', x: 22, y: 45, type: '基础' },
@@ -18,6 +20,29 @@ const riskStudents = ref([
   { name: '赵小刚', reason: '连续3次不及格', level: '高风险', handled: false },
   { name: '孙浩宇', reason: '作业完成率低', level: '关注', handled: false },
 ])
+
+// ---- 后端知识点树 + 相关题目 ----
+const kpTree = ref([])
+const relatedQuestions = ref([])
+const loadingQuestions = ref(false)
+const showQuestions = ref(false)
+
+async function loadKpTree() {
+  try { const r = await fetchKnowledgeTree(); if (r?.code === 200) kpTree.value = r.data || [] } catch {}
+}
+async function loadRelatedQuestions(kpId) {
+  loadingQuestions.value = true; showQuestions.value = true
+  try { const r = await fetchQuestions({ knowledgePointId: kpId, page: 1, size: 10 }); relatedQuestions.value = r?.data?.records || [] }
+  catch { relatedQuestions.value = [] } finally { loadingQuestions.value = false }
+}
+function toggleQuestions() {
+  if (!showQuestions.value) { showQuestions.value = true; loadRelatedQuestions(selectedNode.value.id) }
+  else showQuestions.value = false
+}
+function diffLabel(d) { return d === 'easy' ? '基础' : d === 'hard' ? '困难' : '中等' }
+function typeLabel(t) { const m = { single_choice:'单选', multi_choice:'多选', true_false:'判断', fill_blank:'填空', short_answer:'简答' }; return m[t] || t || '-' }
+
+onMounted(() => loadKpTree())
 
 const selectedNode = computed(() => nodes.find((n) => n.id === selectedNodeId.value) || nodes[0])
 
@@ -80,6 +105,24 @@ function markHandled(index) {
             <p>图谱类型：<em>{{ selectedNode.type }}</em></p>
             <p>掌握概率：<em>{{ mastery }}%</em></p>
             <p>高频错因：<em>{{ wrongReason }}</em></p>
+
+            <div class="related-section">
+              <div class="related-title" @click="toggleQuestions">
+                <span>相关题目</span>
+                <span class="related-arrow" :class="{open:showQuestions}">&#9662;</span>
+              </div>
+              <div v-if="showQuestions" class="related-list">
+                <div v-if="loadingQuestions" class="q-loading">加载中...</div>
+                <div v-else-if="!relatedQuestions.length" class="q-empty">暂无相关题目</div>
+                <div v-for="q in relatedQuestions" :key="q.id" class="q-item">
+                  <div class="q-item-head">
+                    <span class="q-diff" :class="'q-diff-'+q.difficulty">{{ diffLabel(q.difficulty) }}</span>
+                    <span class="q-type">{{ typeLabel(q.type) }}</span>
+                  </div>
+                  <p class="q-title">{{ q.title }}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </aside>
 
@@ -260,6 +303,24 @@ function markHandled(index) {
   font-style: normal;
   font-weight: 600;
 }
+
+/* 相关题目 */
+.related-section { margin-top: 6px; border-top: 1px solid #e5e7eb; padding-top: 8px; }
+.related-title { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 12px; font-weight: 600; color: #6b7280; padding: 4px 0; user-select: none; }
+.related-title:hover { color: #6366f1; }
+.related-arrow { transition: transform .2s; }
+.related-arrow.open { transform: rotate(180deg); }
+.related-list { margin-top: 4px; max-height: 200px; overflow-y: auto; }
+.q-loading, .q-empty { text-align: center; color: #9ca3af; font-size: 11px; padding: 12px 0; }
+.q-item { padding: 6px 8px; border-radius: 6px; background: #fff; border: 1px solid #f3f4f6; margin-bottom: 4px; }
+.q-item:hover { border-color: #c7d2fe; }
+.q-item-head { display: flex; gap: 4px; margin-bottom: 2px; }
+.q-diff { border-radius: 3px; padding: 1px 5px; font-size: 10px; font-weight: 700; }
+.q-diff-easy { background: #dcfce7; color: #16a34a; }
+.q-diff-medium { background: #fef3c7; color: #d97706; }
+.q-diff-hard { background: #fee2e2; color: #dc2626; }
+.q-type { font-size: 10px; color: #9ca3af; }
+.q-title { margin: 0; font-size: 11px; color: #374151; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 .graph-plot {
   position: relative;
