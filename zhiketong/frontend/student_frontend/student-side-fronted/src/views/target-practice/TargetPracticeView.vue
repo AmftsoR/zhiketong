@@ -173,7 +173,14 @@ function updateClock() {
 }
 
 function goBack() {
-  router.push('/study')
+  const returnTo = route.query.returnTo
+  if (returnTo === 'wrong-book') {
+    router.push('/wrong-book')
+  } else if (returnTo === 'favorites') {
+    router.push('/favorites')
+  } else {
+    router.push('/study')
+  }
 }
 
 function selectMode(key) {

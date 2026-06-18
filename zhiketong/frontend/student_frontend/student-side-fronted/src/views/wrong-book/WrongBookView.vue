@@ -38,16 +38,6 @@
         <span>{{ type.label }}</span>
         <span class="filter-pill__arrow"></span>
       </button>
-
-      <button
-        type="button"
-        class="filter-pill filter-pill--wide"
-        :class="{ 'filter-pill--active': selectedView === 'attribution' }"
-        @click="selectedView = selectedView === 'attribution' ? 'all' : 'attribution'"
-      >
-        <span>知识点归因</span>
-        <span class="filter-pill__icon"></span>
-      </button>
     </section>
 
     <section v-for="item in filteredMistakes" :key="item.id" class="mistake-card page-card">
@@ -64,15 +54,12 @@
       </p>
 
       <div class="mistake-card__footer">
-        <div class="mistake-card__wrong-count">
-          <span>做错</span>
-          <strong>{{ item.wrongCount }}</strong>
-          <span>次</span>
-        </div>
-
         <div class="mistake-card__actions">
           <button type="button" class="action-btn action-btn--ghost" @click="openAnalysis(item)">看解析</button>
           <button type="button" class="action-btn action-btn--primary" @click="doVariant(item)">做变式</button>
+          <button type="button" class="action-btn action-btn--favorite" @click="toggleFavorite(item)">
+            {{ item.isFavorited ? '已收藏' : '收藏' }}
+          </button>
           <button type="button" class="action-btn action-btn--danger" @click="handleDelete(item)">移除</button>
         </div>
       </div>
@@ -215,10 +202,6 @@ const selectedType = computed({
   get: () => studentStore.wrongBook.selectedType,
   set: (value) => studentStore.setWrongBookType(value),
 })
-const selectedView = computed({
-  get: () => studentStore.wrongBook.selectedView,
-  set: (value) => studentStore.toggleWrongBookView(value),
-})
 const openedAnalysisId = computed({
   get: () => studentStore.wrongBook.openedAnalysisId,
   set: (value) => studentStore.setOpenedAnalysisId(value),
@@ -254,7 +237,14 @@ function openAnalysis(item) {
 }
 
 function doVariant(item) {
-  router.push({ path: '/target-practice', query: { source: item.root } })
+  router.push({ path: '/target-practice', query: { source: item.root, returnTo: 'wrong-book' } })
+}
+
+function toggleFavorite(item) {
+  const qid = item.questionId || item.id
+  studentStore.toggleFavorite(qid).then(() => {
+    item.isFavorited = !item.isFavorited
+  })
 }
 
 // ===== 添加错题表单 =====
@@ -482,6 +472,11 @@ onBeforeUnmount(() => {
   background: #fff8e6;
 }
 
+.mistake-badge--mastered {
+  color: #00b894;
+  background: #e6fff8;
+}
+
 .mistake-card__date {
   color: #999;
   font-size: 0.75rem;
@@ -516,35 +511,22 @@ onBeforeUnmount(() => {
   border-top: 1px solid #f5f5f5;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.mistake-card__wrong-count {
-  color: #333;
-  font-size: 0.75rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.mistake-card__wrong-count strong {
-  color: #ff7675;
-  font-size: 0.875rem;
+  justify-content: flex-start;
 }
 
 .mistake-card__actions {
-  display: inline-flex;
-  gap: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .action-btn {
-  min-width: 56px;
+  min-width: 48px;
   height: 26px;
   border-radius: 12px;
   border: 0;
-  padding: 0 12px;
-  font-size: 0.75rem;
+  padding: 0 10px;
+  font-size: 0.7rem;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
@@ -564,6 +546,11 @@ onBeforeUnmount(() => {
 .action-btn--danger {
   color: #ff7675;
   background: #ffebeb;
+}
+
+.action-btn--favorite {
+  color: #fdcb6e;
+  background: #fff8e6;
 }
 
 .analysis-panel {

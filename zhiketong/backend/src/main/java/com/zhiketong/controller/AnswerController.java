@@ -1,17 +1,23 @@
 package com.zhiketong.controller;
 
 import com.zhiketong.common.R;
+import com.zhiketong.entity.MistakeBook;
 import com.zhiketong.entity.QuestionBank;
 import com.zhiketong.entity.UserAnswer;
+import com.zhiketong.mapper.MistakeBookMapper;
 import com.zhiketong.mapper.QuestionBankMapper;
 import com.zhiketong.mapper.UserAnswerMapper;
 import com.zhiketong.service.MistakeService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/answer")
@@ -21,6 +27,8 @@ public class AnswerController {
     private QuestionBankMapper questionBankMapper;
     @Autowired
     private UserAnswerMapper userAnswerMapper;
+    @Autowired
+    private MistakeBookMapper mistakeBookMapper;
     @Autowired
     private MistakeService mistakeService;
 
@@ -67,7 +75,40 @@ public class AnswerController {
             return R.ok(Map.of("isCorrect", false, "message", "回答错误，已加入错题本"));
         }
 
+        // 答对了：自动标记同知识点错题为"已掌握"
+        markMistakesAsMastered(userId, question);
+
         return R.ok(Map.of("isCorrect", true, "message", "回答正确"));
+    }
+
+    /**
+     * 答对题目时，将错题本中同一知识点的错题标记为"已掌握"
+     */
+    private void markMistakesAsMastered(Long userId, QuestionBank question) {
+        Long knowledgePointId = question.getKnowledgePointId();
+        if (knowledgePointId == null) return;
+
+        // 查找用户的所有错题记录
+        LambdaQueryWrapper<MistakeBook> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(MistakeBook::getUserId, userId);
+        List<MistakeBook> mistakes = mistakeBookMapper.selectList(queryWrapper);
+        if (mistakes == null || mistakes.isEmpty()) return;
+
+        List<Long> masteredIds = mistakes.stream()
+                .filter(m -> m.getQuestionId() != null)
+                .filter(m -> {
+                    QuestionBank q = questionBankMapper.selectById(m.getQuestionId());
+                    return q != null && knowledgePointId.equals(q.getKnowledgePointId());
+                })
+                .map(MistakeBook::getId)
+                .collect(Collectors.toList());
+
+        if (!masteredIds.isEmpty()) {
+            LambdaUpdateWrapper<MistakeBook> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.in(MistakeBook::getId, masteredIds)
+                         .set(MistakeBook::getMastered, 1);
+            mistakeBookMapper.update(null, updateWrapper);
+        }
     }
 
     private String parseAnswer(String raw) {

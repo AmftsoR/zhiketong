@@ -76,9 +76,14 @@
       <footer class="assistant-footer">
         <button type="button" class="assistant-footer__left-icon" @click="pickAttachment" aria-label="查看课件"></button>
 
-        <button type="button" class="assistant-footer__input" @click="focusInput">
-          <span>{{ inputPlaceholder }}</span>
-        </button>
+        <textarea
+          ref="inputRef"
+          v-model="draftMessage"
+          class="assistant-footer__input"
+          :placeholder="inputPlaceholder"
+          @keydown.enter.exact.prevent="sendMessage"
+          rows="1"
+        ></textarea>
 
         <button type="button" class="assistant-footer__send" :class="{ 'assistant-footer__send--disabled': isStreaming }" @click="sendMessage" :disabled="isStreaming" aria-label="发送">
           <span v-if="!isStreaming" class="assistant-footer__send-icon"></span>
@@ -159,13 +164,8 @@ function handleQuickAction(actionKey) {
 
 function pickAttachment() {
   inputPlaceholder.value = '请帮我查看相关课件'
-}
-
-function focusInput() {
-  if (!draftMessage.value) {
-    draftMessage.value = ''
-  }
-  scrollToBottom()
+  draftMessage.value = '请帮我查看相关课件'
+  inputRef.value?.focus()
 }
 
 function buildHistory() {
@@ -454,22 +454,23 @@ onBeforeUnmount(() => {
 
 .assistant-footer__input {
   flex: 1 1 auto;
-  height: 38.67px;
+  min-height: 38.67px;
+  max-height: 80px;
   border: 0;
   border-radius: 20px;
   background: #f5f5f5;
-  color: #757575;
-  padding: 0 15px;
-  text-align: left;
+  color: #333;
+  padding: 10px 15px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  line-height: 1.4;
+  resize: none;
+  outline: none;
   cursor: text;
 }
 
-.assistant-footer__input span {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.875rem;
+.assistant-footer__input::placeholder {
+  color: #999;
 }
 
 .assistant-footer__send {

@@ -93,4 +93,45 @@ public class UserController {
         }
         return R.fail("用户不存在");
     }
+
+    /**
+     * 更新个人资料
+     * PUT /api/user/profile
+     * 请求体: { "realName": "新姓名" }
+     */
+    @PutMapping("/profile")
+    public R<String> updateProfile(@RequestBody Map<String, String> body,
+                                    HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) userId = 1L;
+        String realName = body.get("realName");
+        if (realName == null || realName.trim().isEmpty()) {
+            return R.fail("姓名不能为空");
+        }
+        boolean success = userService.updateProfile(userId, realName.trim());
+        return success ? R.ok("资料更新成功") : R.fail("更新失败");
+    }
+
+    /**
+     * 修改密码
+     * PUT /api/user/password
+     * 请求体: { "oldPassword": "旧密码", "newPassword": "新密码" }
+     */
+    @PutMapping("/password")
+    public R<String> changePassword(@RequestBody Map<String, String> body,
+                                     HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) userId = 1L;
+        String oldPassword = body.get("oldPassword");
+        String newPassword = body.get("newPassword");
+        if (oldPassword == null || newPassword == null
+                || oldPassword.trim().isEmpty() || newPassword.trim().isEmpty()) {
+            return R.fail("密码不能为空");
+        }
+        if (newPassword.trim().length() < 6) {
+            return R.fail("新密码长度不能少于6位");
+        }
+        boolean success = userService.changePassword(userId, oldPassword.trim(), newPassword.trim());
+        return success ? R.ok("密码修改成功") : R.fail("旧密码错误");
+    }
 }

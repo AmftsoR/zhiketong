@@ -98,7 +98,7 @@ function toggleAnalysis(item) {
 }
 
 function goPractice(item) {
-  router.push({ path: '/target-practice', query: { source: item.subject } })
+  router.push({ path: '/target-practice', query: { source: item.subject, returnTo: 'favorites' } })
 }
 
 function removeFavorite(item) {
@@ -108,6 +108,8 @@ function removeFavorite(item) {
 onMounted(() => {
   updateClock()
   clockTimer = window.setInterval(updateClock, 30000)
+  // 从后端加载收藏列表
+  studentStore.loadFavorites()
 })
 
 onBeforeUnmount(() => {

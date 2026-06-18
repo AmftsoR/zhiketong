@@ -22,4 +22,5 @@ public class MistakeVO {
     private String knowledgePoint;  // 知识点名称
     private Integer wrongCount;     // 累计做错次数
     private LocalDateTime addedAt;  // 加入错题本时间
+    private Integer mastered;       // 是否已掌握：0=未掌握，1=已掌握
 }

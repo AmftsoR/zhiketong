@@ -122,7 +122,7 @@ function goToSettings() {
 
 function handleMenu(key) {
   if (key === 'history') {
-    router.push('/analysis-report')
+    router.push('/learning-history')
     return
   }
 
@@ -132,7 +132,7 @@ function handleMenu(key) {
   }
 
   if (key === 'settings') {
-    studentStore.profile.name = '张同学'
+    router.push('/settings')
     return
   }
 

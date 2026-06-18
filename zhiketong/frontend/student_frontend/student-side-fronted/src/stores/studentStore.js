@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { fetchMistakes, createMistake as createMistakeApi, deleteMistake, submitAnswer } from '../api/mistake'
 import { fetchRandomQuestion } from '../api/question'
+import { fetchFavorites, addFavorite as addFavoriteApi, removeFavoriteApi } from '../api/favorite'
 
 const practiceQuestionBanks = {
   math: {
@@ -357,26 +358,7 @@ export const useStudentStore = defineStore('student', {
       mistakes: [],
       openedAnalysisId: '',
     },
-    favorites: [
-      {
-        id: 'fav-1',
-        subject: 'math',
-        type: 'single',
-        stem: '已知集合 A = {x | x² - 3x + 2 = 0}，则集合 A 的真子集个数是 ( )',
-        correctAnswer: 'C',
-        analysis: '集合 A = {1, 2}，共 2 个元素，真子集个数为 2² - 1 = 3',
-        date: '06-09 14:30',
-      },
-      {
-        id: 'fav-2',
-        subject: 'physics',
-        type: 'single',
-        stem: '一物体做匀加速直线运动，初速度为 2m/s，加速度为 1m/s²，则 3s 末的速度为 ( )',
-        correctAnswer: 'D',
-        analysis: 'v = v₀ + at = 2 + 1 × 3 = 5 m/s',
-        date: '06-08 10:15',
-      },
-    ],
+    favorites: [],
     analysis: {
       selectedMonthKey: 'current',
       monthOptions: [
@@ -623,9 +605,64 @@ export const useStudentStore = defineStore('student', {
       }
     },
 
+    /** 从后端加载收藏列表 */
+    async loadFavorites() {
+      try {
+        const res = await fetchFavorites()
+        const list = (res && res.data) || []
+        const subjectMap = { math: '数学', physics: '物理', english: '英语' }
+        const typeMap = { single_choice: '单选题', single: '单选题', fill: '填空题', judge: '判断题' }
+        this.favorites = list.map(item => {
+          let dateStr = ''
+          if (item.createdAt) {
+            const d = new Date(item.createdAt)
+            dateStr = `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+          }
+          return {
+            id: `fav-${item.id || item.questionId}`,
+            questionId: item.questionId,
+            subject: item.subject || 'math',
+            type: typeMap[item.type] || 'single',
+            stem: item.stem || '',
+            correctAnswer: item.correctAnswer || '',
+            analysis: item.analysis || '暂无解析',
+            date: dateStr,
+          }
+        })
+      } catch (e) {
+        console.error('加载收藏失败:', e)
+      }
+    },
+
+    /** 切换收藏状态 */
+    async toggleFavorite(questionId) {
+      try {
+        // 检查是否已收藏
+        const existing = this.favorites.find(f => f.questionId === questionId)
+        if (existing) {
+          await removeFavoriteApi(questionId)
+          this.favorites = this.favorites.filter(f => f.questionId !== questionId)
+        } else {
+          await addFavoriteApi(questionId)
+          await this.loadFavorites()
+        }
+      } catch (e) {
+        console.error('收藏操作失败:', e)
+      }
+    },
+
     /** 取消收藏 */
-    removeFavorite(id) {
-      this.favorites = this.favorites.filter(f => f.id !== id)
+    async removeFavorite(id) {
+      try {
+        const item = this.favorites.find(f => f.id === id)
+        if (item && item.questionId) {
+          await removeFavoriteApi(item.questionId)
+        }
+        this.favorites = this.favorites.filter(f => f.id !== id)
+      } catch (e) {
+        console.error('取消收藏失败:', e)
+        this.favorites = this.favorites.filter(f => f.id !== id)
+      }
     },
 
     /** 从后端加载随机题目用于练习 */
@@ -682,6 +719,11 @@ export const useStudentStore = defineStore('student', {
       const levelMap = { easy: 'weak', medium: 'medium', hard: 'weak' }
       const labelMap = { easy: '未掌握', medium: '基本掌握', hard: '未掌握' }
 
+      // mastered=1 时显示"已掌握"
+      const isMastered = item.mastered === 1
+      const level = isMastered ? 'mastered' : (levelMap[item.difficulty] || 'medium')
+      const levelLabel = isMastered ? '已掌握' : (labelMap[item.difficulty] || '基本掌握')
+
       // 格式化日期
       let dateStr = ''
       if (item.addedAt) {
@@ -697,8 +739,8 @@ export const useStudentStore = defineStore('student', {
         questionId: item.questionId,
         subject: item.subject || 'math',
         type: typeMap[item.type] || 'single',
-        level: levelMap[item.difficulty] || 'medium',
-        levelLabel: labelMap[item.difficulty] || '基本掌握',
+        level,
+        levelLabel,
         date: dateStr,
         stem: item.stem || '',
         root: item.knowledgePoint || '',
@@ -707,6 +749,7 @@ export const useStudentStore = defineStore('student', {
         correctAnswer: item.correctAnswer || '',
         analysis: item.analysis || '暂未提供解析',
         options: item.options || '[]',
+        isFavorited: false,
       }
     },
 

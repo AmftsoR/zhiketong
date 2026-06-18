@@ -7,14 +7,11 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("mistake_book")
-public class MistakeBook {
+@TableName("favorite")
+public class Favorite {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long userId;
     private Long questionId;
-    private Long userAnswerId;
-    private LocalDateTime addedAt;
-    /** 是否已掌握：0=未掌握，1=已掌握 */
-    private Integer mastered;
+    private LocalDateTime createdAt;
 }

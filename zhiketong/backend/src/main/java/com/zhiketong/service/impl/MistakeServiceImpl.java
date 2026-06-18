@@ -113,6 +113,7 @@ public class MistakeServiceImpl implements MistakeService {
             vo.setQuestionId(mistake.getQuestionId());
             vo.setAddedAt(mistake.getAddedAt());
             vo.setWrongCount(wrongCountMap.getOrDefault(mistake.getQuestionId(), 1L).intValue());
+            vo.setMastered(mistake.getMastered() != null ? mistake.getMastered() : 0);
 
             if (question != null) {
                 vo.setType(question.getType());

@@ -48,4 +48,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setCreatedAt(null); // 由数据库自动生成
         return this.save(user);
     }
+
+    @Override
+    public boolean updateProfile(Long userId, String realName) {
+        User user = this.getById(userId);
+        if (user == null) return false;
+        user.setRealName(realName);
+        return this.updateById(user);
+    }
+
+    @Override
+    public boolean changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = this.getById(userId);
+        if (user == null) return false;
+        // 验证旧密码
+        if (!encoder.matches(oldPassword, user.getPassword())) {
+            return false;
+        }
+        // 更新为新密码
+        user.setPassword(encoder.encode(newPassword));
+        return this.updateById(user);
+    }
 }

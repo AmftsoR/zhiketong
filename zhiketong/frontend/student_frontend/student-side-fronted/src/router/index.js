@@ -8,6 +8,8 @@ import AnalysisReportView from '../views/analysis-report/AnalysisReportView.vue'
 import AiAssistantView from '../views/ai-assistant/AiAssistantView.vue'
 import ProfileView from '../views/profile/ProfileView.vue'
 import FavoriteView from '../views/favorite/FavoriteView.vue'
+import LearningHistoryView from '../views/history/LearningHistoryView.vue'
+import SettingsView from '../views/settings/SettingsView.vue'
 import LoginView from '../views/login/LoginView.vue'
 import NotFoundView from '../views/not-found/NotFoundView.vue'
 
@@ -52,6 +54,8 @@ const routes = [
     meta: { title: 'AI启发式答题助手' },
   },
   { path: '/favorites', name: 'favorites', component: FavoriteView, meta: { title: '我的收藏' } },
+  { path: '/learning-history', name: 'learning-history', component: LearningHistoryView, meta: { title: '学习历史记录' } },
+  { path: '/settings', name: 'settings', component: SettingsView, meta: { title: '设置' } },
   { path: '/profile', name: 'profile', component: ProfileView, meta: { title: '我的界面' } },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView, meta: { title: '页面不存在' } },
 ]
