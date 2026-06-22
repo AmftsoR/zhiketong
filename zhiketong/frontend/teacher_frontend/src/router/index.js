@@ -42,6 +42,12 @@ const routes = [
         meta: { title: '题库管理' },
       },
       {
+        path: 'homework',
+        name: 'homework-manage',
+        component: () => import('../views/teacher/HomeworkManageView.vue'),
+        meta: { title: '作业管理' },
+      },
+      {
         path: 'settings',
         name: 'settings',
         component: () => import('../views/teacher/SettingsView.vue'),

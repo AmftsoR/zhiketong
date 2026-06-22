@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>接口返回示例文档</title>
+  <style>
+    :root {
+      --text: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e2ec;
+      --soft: #f4f7fb;
+      --panel: #ffffff;
+      --ink: #111827;
+      --get: #2563eb;
+      --post: #059669;
+      --put: #d97706;
+      --delete: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--soft);
+      color: var(--text);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      letter-spacing: 0;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 34px 28px 48px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: end;
+      padding-bottom: 22px;
+      border-bottom: 3px solid var(--ink);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(120px, 1fr));
+      gap: 10px;
+      min-width: 390px;
+    }
+
+    .summary div {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      text-align: center;
+    }
+
+    .summary strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+      font-size: 22px;
+    }
+
+    .summary span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .notice {
+      margin: 22px 0;
+      padding: 14px 16px;
+      border-left: 4px solid #334155;
+      background: #fff;
+      color: #334155;
+      font-size: 15px;
+    }
+
+    .section-title {
+      margin: 32px 0 14px;
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .endpoint {
+      margin: 14px 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, .06);
+    }
+
+    .endpoint-head {
+      display: grid;
+      grid-template-columns: 90px 1fr 180px;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfdff;
+    }
+
+    .method {
+      display: inline-block;
+      width: 76px;
+      padding: 7px 0;
+      border-radius: 4px;
+      color: #fff;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .get {
+      background: var(--get);
+    }
+
+    .post {
+      background: var(--post);
+    }
+
+    .put {
+      background: var(--put);
+    }
+
+    .delete {
+      background: var(--delete);
+    }
+
+    .path {
+      font-family: Consolas, Menlo, monospace;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .desc {
+      color: var(--muted);
+      text-align: right;
+      font-size: 14px;
+    }
+
+    .endpoint-body {
+      display: grid;
+      grid-template-columns: 270px 1fr;
+      gap: 18px;
+      padding: 16px;
+    }
+
+    .meta {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .meta b {
+      color: var(--text);
+    }
+
+    pre {
+      margin: 0;
+      padding: 15px 16px;
+      overflow: auto;
+      border-radius: 6px;
+      background: #101827;
+      color: #e8eef7;
+      font-family: Consolas, Menlo, monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .footer {
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 760px) {
+      .hero,
+      .endpoint-body,
+      .endpoint-head {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        min-width: 0;
+        grid-template-columns: 1fr;
+      }
+
+      .desc {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div>
+        <h1>智课通后端接口返回示例</h1>
+        <div class="subtitle">服务地址：http://localhost:8080 ｜ 统一响应结构：code / message / data</div>
+      </div>
+      <div class="summary">
+        <div><strong>18</strong><span>接口总数</span></div>
+        <div><strong>6</strong><span>题库接口</span></div>
+        <div><strong>7</strong><span>业务接口</span></div>
+      </div>
+    </header>
+
+    <div class="notice">
+      以下为当前 Controller 暴露接口的成功返回示例。删除类接口成功时 data 为空，由于统一返回类启用了非空字段输出，最终 JSON 不显示 data。
+    </div>
+
+    <h2 class="section-title">题库管理接口</h2>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method get">GET</span>
+        <span class="path">/api/questions/{id}</span>
+        <span class="desc">根据ID查询题目</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>路径参数：</b>id</li>
+          <li><b>返回类型：</b>Result&lt;Question&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "id": 1,
+    "knowledgePointId": 10,
+    "type": "single",
+    "difficulty": "easy",
+    "title": "下列哪一项是一次函数？",
+    "options": "[\"y=2x+1\",\"y=x^2\",\"y=1/x\",\"x^2+y^2=1\"]",
+    "answer": "[\"A\"]",
+    "explanation": "一次函数的一般形式为 y=kx+b。",
+    "createdAt": "2026-06-17T00:00:00"
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method put">PUT</span>
+        <span class="path">/api/questions/{id}</span>
+        <span class="desc">修改题目</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>路径参数：</b>id</li>
+          <li><b>请求体：</b>QuestionDTO</li>
+          <li><b>返回类型：</b>Result&lt;Question&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "id": 1,
+    "knowledgePointId": 10,
+    "type": "single",
+    "difficulty": "medium",
+    "title": "更新后的题干内容",
+    "options": "[\"A\",\"B\",\"C\",\"D\"]",
+    "answer": "[\"B\"]",
+    "explanation": "更新后的解析内容",
+    "createdAt": "2026-06-17T00:00:00"
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method delete">DELETE</span>
+        <span class="path">/api/questions/{id}</span>
+        <span class="desc">删除题目</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>路径参数：</b>id</li>
+          <li><b>返回类型：</b>Result&lt;Void&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success"
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method post">POST</span>
+        <span class="path">/api/questions</span>
+        <span class="desc">新增题目</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>请求体：</b>QuestionDTO</li>
+          <li><b>返回类型：</b>Result&lt;Question&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "id": 12,
+    "knowledgePointId": 10,
+    "type": "single",
+    "difficulty": "easy",
+    "title": "新建题目题干",
+    "options": "[\"A选项\",\"B选项\",\"C选项\",\"D选项\"]",
+    "answer": "[\"A\"]",
+    "explanation": "题目解析",
+    "createdAt": "2026-06-17T00:00:00"
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method post">POST</span>
+        <span class="path">/api/questions/import</span>
+        <span class="desc">Excel批量导入题目</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>表单参数：</b>file</li>
+          <li><b>返回类型：</b>Result&lt;QuestionImportResultVO&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "successCount": 8,
+    "failureCount": 1,
+    "totalCount": 9,
+    "errors": [
+      {
+        "rowIndex": 5,
+        "message": "知识点ID不能为空"
+      }
+    ]
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method get">GET</span>
+        <span class="path">/api/questions/page</span>
+        <span class="desc">分页查询题目</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>查询参数：</b>knowledgePointId / difficulty / type / keyword / page / size</li>
+          <li><b>返回类型：</b>Result&lt;Page&lt;Question&gt;&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "records": [
+      {
+        "id": 1,
+        "knowledgePointId": 10,
+        "type": "single",
+        "difficulty": "easy",
+        "title": "下列哪一项是一次函数？",
+        "options": "[\"y=2x+1\",\"y=x^2\",\"y=1/x\",\"x^2+y^2=1\"]",
+        "answer": "[\"A\"]",
+        "explanation": "一次函数的一般形式为 y=kx+b。",
+        "createdAt": "2026-06-17T00:00:00"
+      }
+    ],
+    "total": 1,
+    "size": 10,
+    "current": 1,
+    "pages": 1
+  }
+}</pre>
+      </div>
+    </section>
+
+    <h2 class="section-title">知识点管理接口</h2>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method put">PUT</span>
+        <span class="path">/api/knowledge-points/{id}</span>
+        <span class="desc">修改知识点</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>路径参数：</b>id</li>
+          <li><b>请求体：</b>KnowledgePointUpdateDTO</li>
+          <li><b>返回类型：</b>Result&lt;KnowledgePoint&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "id": 10,
+    "parentId": 1,
+    "name": "一次函数图像",
+    "subject": "math",
+    "createdAt": "2026-06-17T00:00:00"
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method delete">DELETE</span>
+        <span class="path">/api/knowledge-points/{id}</span>
+        <span class="desc">删除知识点</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>路径参数：</b>id</li>
+          <li><b>返回类型：</b>Result&lt;Void&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success"
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method put">PUT</span>
+        <span class="path">/api/knowledge-points/{id}/move</span>
+        <span class="desc">移动知识点节点</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>路径参数：</b>id</li>
+          <li><b>请求体：</b>KnowledgePointMoveDTO</li>
+          <li><b>返回类型：</b>Result&lt;Void&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success"
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method post">POST</span>
+        <span class="path">/api/knowledge-points</span>
+        <span class="desc">新增知识点</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>请求体：</b>KnowledgePointCreateDTO</li>
+          <li><b>返回类型：</b>Result&lt;KnowledgePoint&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "id": 10,
+    "parentId": 1,
+    "name": "一次函数",
+    "subject": "math",
+    "createdAt": "2026-06-17T00:00:00"
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method get">GET</span>
+        <span class="path">/api/knowledge-points/tree</span>
+        <span class="desc">查询知识点树</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>查询参数：</b>无</li>
+          <li><b>返回类型：</b>Result&lt;List&lt;KnowledgePointTreeVO&gt;&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": [
+    {
+      "id": 1,
+      "parentId": null,
+      "name": "函数",
+      "subject": "math",
+      "children": [
+        {
+          "id": 10,
+          "parentId": 1,
+          "name": "一次函数",
+          "subject": "math",
+          "children": []
+        }
+      ]
+    }
+  ]
+}</pre>
+      </div>
+    </section>
+
+    <h2 class="section-title">练习推送接口</h2>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method post">POST</span>
+        <span class="path">/api/exercises/push</span>
+        <span class="desc">根据薄弱点梯度抽题</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>请求体：</b>ExercisePushRequestDTO</li>
+          <li><b>返回类型：</b>Result&lt;ExercisePushVO&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "userId": 1,
+    "weakKnowledgePointIds": [10, 12],
+    "difficultyDistribution": {
+      "easy": 5,
+      "medium": 3,
+      "hard": 2
+    },
+    "questions": [
+      {
+        "id": 1,
+        "knowledgePointId": 10,
+        "type": "single",
+        "difficulty": "easy",
+        "title": "下列哪一项是一次函数？",
+        "options": "[\"y=2x+1\",\"y=x^2\",\"y=1/x\",\"x^2+y^2=1\"]",
+        "answer": "[\"A\"]",
+        "explanation": "一次函数的一般形式为 y=kx+b。",
+        "createdAt": "2026-06-17T00:00:00"
+      }
+    ]
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method post">POST</span>
+        <span class="path">/api/exercises/submit</span>
+        <span class="desc">提交练习并判题</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>请求体：</b>ExerciseSubmitRequestDTO</li>
+          <li><b>返回类型：</b>Result&lt;ExerciseSubmitVO&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "totalCount": 2,
+    "correctCount": 1,
+    "wrongCount": 1,
+    "score": 50.0,
+    "details": [
+      {
+        "questionId": 1,
+        "userAnswer": "A",
+        "correctAnswer": "[\"A\"]",
+        "correct": true,
+        "explanation": "一次函数的一般形式为 y=kx+b。",
+        "addedToMistakeBook": false
+      },
+      {
+        "questionId": 2,
+        "userAnswer": "B",
+        "correctAnswer": "[\"C\"]",
+        "correct": false,
+        "explanation": "错题解析内容",
+        "addedToMistakeBook": true
+      }
+    ]
+  }
+}</pre>
+      </div>
+    </section>
+
+    <h2 class="section-title">AI教研报告接口</h2>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method post">POST</span>
+        <span class="path">/api/teaching-reports/generate</span>
+        <span class="desc">生成教研报告</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>请求体：</b>TeachingReportRequestDTO</li>
+          <li><b>返回类型：</b>Result&lt;TeachingReportVO&gt;</li>
+          <li><b>AI配置：</b>DEEPSEEK_API_KEY</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "title": "AI教研报告",
+    "className": "一班",
+    "generatedAt": "2026-06-17T00:00:00",
+    "summary": "共统计 3 个知识点，当前薄弱点集中在「一次函数」，正确率约 52%。",
+    "generatedByAi": true,
+    "aiAnalysis": "DeepSeek 生成的结构化教研分析内容",
+    "knowledgePointStats": [
+      {
+        "knowledgePointId": 10,
+        "knowledgePointName": "一次函数",
+        "totalCount": 40,
+        "wrongCount": 19,
+        "accuracyRate": 0.525
+      }
+    ],
+    "suggestions": [
+      "对正确率低于 60% 的知识点安排讲评和二次练习。",
+      "将高频错题同步到错题本，下一次课前复测。"
+    ]
+  }
+}</pre>
+      </div>
+    </section>
+
+    <h2 class="section-title">分层作业接口</h2>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method post">POST</span>
+        <span class="path">/api/homeworks</span>
+        <span class="desc">发布分层作业</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>请求体：</b>HomeworkCreateDTO</li>
+          <li><b>返回类型：</b>Result&lt;HomeworkVO&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "id": 1,
+    "teacherId": 2,
+    "title": "一次函数分层作业",
+    "description": "基础题和提升题混合练习",
+    "knowledgePointIds": [10, 12],
+    "difficulty": "medium",
+    "className": "一班",
+    "deadline": "2026-06-20T18:00:00",
+    "createdAt": "2026-06-17T00:00:00",
+    "targets": [
+      {
+        "id": 1,
+        "homeworkId": 1,
+        "targetType": "class",
+        "targetId": null,
+        "className": "一班",
+        "createdAt": "2026-06-17T00:00:00"
+      }
+    ]
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method get">GET</span>
+        <span class="path">/api/homeworks/{id}</span>
+        <span class="desc">查看作业详情</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>路径参数：</b>id</li>
+          <li><b>返回类型：</b>Result&lt;HomeworkVO&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "id": 1,
+    "teacherId": 2,
+    "title": "一次函数分层作业",
+    "knowledgePointIds": [10, 12],
+    "difficulty": "medium",
+    "className": "一班",
+    "targets": [
+      {
+        "id": 1,
+        "homeworkId": 1,
+        "targetType": "student",
+        "targetId": 1001,
+        "className": null,
+        "createdAt": "2026-06-17T00:00:00"
+      }
+    ]
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method get">GET</span>
+        <span class="path">/api/homeworks/page</span>
+        <span class="desc">分页查询作业</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>查询参数：</b>teacherId / className / difficulty / page / size</li>
+          <li><b>返回类型：</b>Result&lt;Page&lt;Homework&gt;&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "records": [
+      {
+        "id": 1,
+        "teacherId": 2,
+        "title": "一次函数分层作业",
+        "knowledgePointIds": "[10,12]",
+        "difficulty": "medium",
+        "className": "一班",
+        "deadline": "2026-06-20T18:00:00",
+        "createdAt": "2026-06-17T00:00:00"
+      }
+    ],
+    "total": 1,
+    "size": 10,
+    "current": 1,
+    "pages": 1
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section class="endpoint">
+      <div class="endpoint-head">
+        <span class="method delete">DELETE</span>
+        <span class="path">/api/homeworks/{id}</span>
+        <span class="desc">删除分层作业</span>
+      </div>
+      <div class="endpoint-body">
+        <ul class="meta">
+          <li><b>路径参数：</b>id</li>
+          <li><b>返回类型：</b>Result&lt;Void&gt;</li>
+        </ul>
+        <pre>{
+  "code": 200,
+  "message": "success"
+}</pre>
+      </div>
+    </section>
+
+    <div class="footer">
+      通用失败返回示例：{"code": 500, "message": "错误信息"}。实际数据以数据库查询和业务校验结果为准。
+    </div>
+  </main>
+</body>
+</html>

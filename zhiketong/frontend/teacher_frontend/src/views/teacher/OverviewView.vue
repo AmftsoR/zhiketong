@@ -155,9 +155,6 @@ function levelClass(v) {
     <div class="page-head">
       <h1>数据总览</h1>
       <div class="filters">
-        <select v-model="selectedClass">
-          <option v-for="item in classes" :key="item" :value="item">{{ item }}</option>
-        </select>
         <select v-model="selectedRange">
           <option v-for="item in ranges" :key="item" :value="item">{{ item }}</option>
         </select>

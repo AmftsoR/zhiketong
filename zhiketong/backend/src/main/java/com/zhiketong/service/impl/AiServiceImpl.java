@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -100,7 +101,7 @@ public class AiServiceImpl implements AiService {
 
                 // 逐行读取 SSE 流
                 try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(response.body()))) {
+                        new java.io.InputStreamReader(response.body(), StandardCharsets.UTF_8))) {
                     String line;
                     StringBuilder fullContent = new StringBuilder();
 

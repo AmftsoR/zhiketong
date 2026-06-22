@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiketong.backend.mapper.QuestionMapper">
+
+    <select id="selectPageByQuery" resultType="com.zhiketong.backend.entity.Question">
+        SELECT * FROM question_bank
+        <where>
+            <if test="query.knowledgePointId != null">
+                knowledge_point_id = #{query.knowledgePointId}
+            </if>
+            <if test="query.type != null and query.type != ''">
+                AND type = #{query.type}
+            </if>
+            <if test="query.difficulty != null and query.difficulty != ''">
+                AND difficulty = #{query.difficulty}
+            </if>
+            <if test="query.keyword != null and query.keyword != ''">
+                AND title LIKE CONCAT('%', #{query.keyword}, '%')
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByKnowledgePointsAndDifficulty" resultType="com.zhiketong.backend.entity.Question">
+        SELECT * FROM question_bank
+        <where>
+            <if test="difficulty != null and difficulty != ''">
+                difficulty = #{difficulty}
+            </if>
+            <if test="kpIds != null and kpIds.size() > 0">
+                AND knowledge_point_id IN
+                <foreach collection="kpIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="excludeIds != null and excludeIds.size() > 0">
+                AND id NOT IN
+                <foreach collection="excludeIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY RAND()
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <select id="selectByIdsNotIn" resultType="com.zhiketong.backend.entity.Question">
+        SELECT * FROM question_bank
+        WHERE knowledge_point_id = #{kpId}
+        <if test="ids != null and ids.size() > 0">
+            AND id NOT IN
+            <foreach collection="ids" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        ORDER BY RAND()
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+</mapper>

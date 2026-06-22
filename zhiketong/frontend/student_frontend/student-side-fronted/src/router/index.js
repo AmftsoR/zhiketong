@@ -56,6 +56,18 @@ const routes = [
   { path: '/favorites', name: 'favorites', component: FavoriteView, meta: { title: '我的收藏' } },
   { path: '/learning-history', name: 'learning-history', component: LearningHistoryView, meta: { title: '学习历史记录' } },
   { path: '/settings', name: 'settings', component: SettingsView, meta: { title: '设置' } },
+  {
+    path: '/my-homework',
+    name: 'my-homework',
+    component: () => import('../views/homework/MyHomeworkView.vue'),
+    meta: { title: '我的作业' },
+  },
+  {
+    path: '/homework-do',
+    name: 'homework-do',
+    component: () => import('../views/homework/HomeworkDoView.vue'),
+    meta: { title: '做作业' },
+  },
   { path: '/profile', name: 'profile', component: ProfileView, meta: { title: '我的界面' } },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView, meta: { title: '页面不存在' } },
 ]

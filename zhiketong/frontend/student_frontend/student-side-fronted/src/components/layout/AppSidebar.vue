@@ -25,6 +25,7 @@ const navItems = [
   { label: '学习界面-薄弱点图谱', path: '/weakness-map' },
   { label: '靶向练习推送', path: '/target-practice' },
   { label: '个人错题本', path: '/wrong-book' },
+  { label: '我的作业', path: '/my-homework' },
   { label: '学习分析报告', path: '/analysis-report' },
   { label: 'AI启发式答题助手', path: '/ai-assistant' },
   { label: '我的界面', path: '/profile' },
